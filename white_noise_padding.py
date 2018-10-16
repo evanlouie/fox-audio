@@ -1,12 +1,13 @@
 from pydub import AudioSegment
+from pydub.generators import WhiteNoise 
 import wave
 import sys
 import os
 import math
 import numpy as np
 import shutil
-from pydub.generators import WhiteNoise 
 import subprocess
+import random
 
 def wav_length(fname):
     wav = wave.open(fname,'r')
@@ -60,9 +61,11 @@ def padding(wav, white_noise_duration):
         else:
             wav_files = []
             padded_fname = (wav.rsplit('.', 1)[0]).split('/')[-1]
-            #print(padded_fname)
+            #print("PADDED FILENAME: " + padded_fname)
             path = (wav.rsplit('.', 1)[0]).rsplit('/',1)[0]
             #print("PATH: "+ path)
+            fn= (wav.rsplit('.', 1)[0]).rsplit('/',1)[1]
+            #print("FILENAME: " + fn)
 
             # white noise duration should be a list e.g [0,1]
             # generate white noise wav file
@@ -76,7 +79,7 @@ def padding(wav, white_noise_duration):
 
             # stitch white noise wav file to specific audio wav file
             new_wav = AudioSegment.from_wav(wav+"_whitenoise_0.wav") + AudioSegment.from_wav(wav) + AudioSegment.from_wav(wav+"_whitenoise_1.wav")
-            new_wav.export(path+"/"+padded_fname+"_padded.wav"+"_"+str(white_noise_duration[0])+"_"+str(white_noise_duration[1])+".wav", format="wav", parameters=["-ar", "16000"])
+            new_wav.export(path+"/"+padded_fname+"_padded"+"_"+str(white_noise_duration[0])+"_"+str(white_noise_duration[1])+".wav", format="wav", parameters=["-ar", "16000"])
 
             # after
             new_wav_reverse = AudioSegment.from_wav(wav+"_whitenoise_1.wav") + AudioSegment.from_wav(wav) + AudioSegment.from_wav(wav+"_whitenoise_0.wav")
@@ -86,8 +89,13 @@ def padding(wav, white_noise_duration):
             os.remove(wav+"_whitenoise_0.wav")
             os.remove(wav+"_whitenoise_1.wav")
             
-            wav_files.append(padded_fname+"_padded.wav"+"_"+str(white_noise_duration[0])+"_"+str(white_noise_duration[1])+".wav")
-            wav_files.append(padded_fname+"_padded.wav"+"_"+str(white_noise_duration[1])+"_"+str(white_noise_duration[0])+".wav")
+            wav_files.append(path+"/"+padded_fname+"_padded"+"_"+str(white_noise_duration[0])+"_"+str(white_noise_duration[1])+".wav")
+            wav_files.append(path+"/"+padded_fname+"_padded"+"_"+str(white_noise_duration[1])+"_"+str(white_noise_duration[0])+".wav")
+            
+            # If adding to one folder, specify the path of folder!
+            #new_wav.export("output_/"+fn+"_padded"+"_"+str(white_noise_duration[0])+"_"+str(white_noise_duration[1])+".wav", format="wav", parameters=["-ar", "16000"])
+            #new_wav_reverse.export("output_/"+fn+"_padded"+"_"+str(white_noise_duration[1])+"_"+str(white_noise_duration[0])+".wav", format="wav", parameters=["-ar", "16000"])
+            
             break
     return wav_files
 
@@ -105,11 +113,16 @@ float(n)
 # round the wav up to the nearest integer
 integ = math.ceil(n)
 if integ >= 10:
-    raise ValueError('A clip is 10 second or more long. Cannot add padding.')
+    raise ValueError("Clip: " + fname + " is more than 10 or more seconds long. Cannot pad file.")
 else:
     silence_remain = integ - n
     print("white noise remainder: " + str(silence_remain) + " seconds")
     float(silence_remain)
+    rand = random.uniform(0, silence_remain)
+    rand_remain = silence_remain - rand 
+    random = [rand, rand_remain]
+    print("random white noise padding: " + str(random[0]) + " and " + str(random[1]))
+    float(random[0]) and float(random[1])
 
     if silence_remain == 0:
         remainder = 10 - round(n)
@@ -136,11 +149,12 @@ else:
             padding(destination,combination)
     else: 
         # pad audio file
-        rounded_wav = padding(sys.argv[1], [0, silence_remain])
+        #rounded_wav = padding(sys.argv[1], [0, silence_remain])
+        rounded_wav = padding(sys.argv[1], random)
         print(rounded_wav)
         rounded_wav_length_0 = wav_length(rounded_wav[0])
-        print("Length of rounded wav file: " + str(rounded_wav_length_0) + " seconds")
-        float(rounded_wav_length_0)
+        #print("Length of rounded wav file: " + str(rounded_wav_length_0) + " seconds")
+        #float(rounded_wav_length_0)
 
         rounded_wav_length_1 = wav_length(rounded_wav[1])
         #print("Length of rounded wav file: " + str(rounded_wav_length_1) + " seconds")

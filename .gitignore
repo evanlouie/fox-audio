@@ -1,0 +1,16 @@
+wav/
+output*/
+padded/
+tfrecord*/
+DPI*/
+
+.DS_STORE
+
+*.csv
+*.zip
+*.pyc
+*.json
+vggish_model.ckpt
+
+deadpool*/
+tf_models*/

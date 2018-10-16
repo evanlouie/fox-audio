@@ -345,6 +345,16 @@ To do this, the command line changes slightly:
  
 When using the --target_directory argument, the --tf_directory argument needs to be specified. You can specify the --subdirectory arugment, which also requires --tf_directory. When using this script, the path of the csv file that contains the class labels indices is required using the --labels-file flag.
 
+### White Noise Padding
+
+The white_noise_padding.py is designed to pad wav files to preferred length of 10 seconds using a white noise generator from Python's Pydub Audio Segment library.
+
+In order to use the script, run the following command in terminal:
+
+```
+python white_noise_padding.py \path\to\wav\file
+
+```
 ## Selection of model:
 
 * **Video-Level Models**
@@ -400,7 +410,7 @@ Now that you have the Youtube-8m model samples and the audioset features to trai
     * In the portal add port `6006` as an inbound rule for your network security group that you VM is configured to.
     * Use `tensorboard --logdir=model_new --host=0.0.0.0` from a new terminal in the VM and navigate to tensorboard by entering `<Public_Ip_Address_for_your_VM>:6006`
 
-### Evalute
+### Evaluate
 
 We will now use the binaries for evaluating Tensorflow models on the YouTube-8M dataset with audioset embeddings. Run this command once or for an arbitrary time where:
 * `--train_data_pattern` is the path to the eval_train tensorflor wecords for the audtioset embeddings
