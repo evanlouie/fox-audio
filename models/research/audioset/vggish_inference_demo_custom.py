@@ -96,6 +96,11 @@ flags.DEFINE_string(
     'Path to csv file that contains label ids'
 )
 
+flags.DEFINE_boolean(
+    'ff', False,
+    'If using flat files'
+)
+
 FLAGS = flags.FLAGS
 
 def get_last_row(csv_filename):

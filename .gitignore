@@ -1,0 +1,6 @@
+wav/
+output/
+padded/
+tfrecord/
+
+.DS_STORE
