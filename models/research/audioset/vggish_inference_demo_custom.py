@@ -59,6 +59,7 @@ import os
 import csv
 import sys 
 from collections import deque
+import re
 
 flags = tf.app.flags
 
@@ -96,6 +97,11 @@ flags.DEFINE_string(
     'Path to csv file that contains label ids'
 )
 
+flags.DEFINE_boolean(
+    'ff', False,
+    'If using flat files'
+)
+
 FLAGS = flags.FLAGS
 
 def get_last_row(csv_filename):
@@ -107,32 +113,44 @@ def get_last_row(csv_filename):
         return lastrow
 
 def embedding(wav, tf_record_filename, labels_filename):
+    f = open('csvfile.csv','a')
+    f.write('\n') #Give your csv text here.
+    ## Python will convert \n to os.linesep
+    f.close()
 
-    # name of subdirectory
-    sub_name = wav.split('/')[-2]
-    print("SUB_NAME: " + sub_name)
+    label_id = 0
 
     # WAV Filename
     if type(wav) == str:
         wav_filename = wav.rsplit('/',1)[-1]
-        label = 0
     else:
         wav_filename = wav
 
+    if FLAGS.ff:
+        print("parsing flat file(s)...")
+        class_label = (re.search('\(([^)]+)', wav).group(1)).capitalize()
+        print("CLASS LABEL: " + class_label)
+
+    else:
+        # name of subdirectory
+        class_label = str((wav.split('/')[-2]).capitalize())
+        print("CLASS LABEL: " + class_label)
+
     # Acquiring Label ID
     if labels_filename:
-        csv_file = csv.reader(open(labels_filename, "rt", encoding="utf8"), delimiter=",")
+        csv_file = csv.reader(open(labels_filename, "rb"), delimiter=",")
         for row in csv_file:
-            if sub_name.title() in row[2]:
+            if class_label in row[2]:
                 print(row)
-                label = int(row[0])
+                label_id = int(row[0])
                 break
 
     # Need to append to csv file if label is STILL 0
-    if label == 0:
+    if label_id == 0:
         print("Label is still 0. Will append new entry in labels CSV file.")
         last_row = get_last_row(labels_filename)
-        row = [int(last_row[0])+1, '/m/t3st/', sub_name.title()]     
+        row = [int(last_row[0])+1, '/m/t3st/', class_label] 
+        #new_row = "\n%s,%s,%s\n" % (int(last_row[0])+1, '/m/t3st/', class_label)
         with open(labels_filename,'a') as fd:
             writer=csv.writer(fd)
             writer.writerow(row)
@@ -166,8 +184,7 @@ def embedding(wav, tf_record_filename, labels_filename):
             vggish_params.OUTPUT_TENSOR_NAME)
 
         # Run inference and postprocessing.
-        [embedding_batch] = sess.run([embedding_tensor],
-                                    feed_dict={features_tensor: batch})
+        [embedding_batch] = sess.run([embedding_tensor], feed_dict={features_tensor: batch})
         #print(embedding_batch)
         postprocessed_batch = pproc.postprocess(embedding_batch)
         #print(postprocessed_batch)
@@ -181,7 +198,7 @@ def embedding(wav, tf_record_filename, labels_filename):
             seq_example = tf.train.SequenceExample(
                 context=tf.train.Features(feature={
                     'video_id': tf.train.Feature(bytes_list=tf.train.BytesList(value=[wav_filename.encode()])),
-                    'labels': tf.train.Feature(int64_list=tf.train.Int64List(value=[label]))
+                    'labels': tf.train.Feature(int64_list=tf.train.Int64List(value=[label_id]))
                 }),
                 feature_lists=tf.train.FeatureLists(feature_list={
                         vggish_params.AUDIO_EMBEDDING_FEATURE_NAME: tf.train.FeatureList(feature=[tf.train.Feature(bytes_list=tf.train.BytesList(value=[embedding.tobytes()]))
@@ -260,7 +277,11 @@ def main(_):
       if FLAGS.tf_directory:
         subdirectory = FLAGS.subdirectory
         #print("SUBDIRECTORY: " + subdirectory)
-        labels_filename = FLAGS.labels_file
+        labels_filename = FLAGS.labels_file 
+        f = open(labels_filename,'a')
+        f.write('\n') #Give your csv text here.
+        ## Python will convert \n to os.linesep
+        f.close()
         for filename in os.listdir(subdirectory):
             if filename.endswith(".wav"):
                 #print("FILENAME: " + filename)
