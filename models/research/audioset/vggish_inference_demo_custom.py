@@ -60,7 +60,9 @@ import csv
 import sys
 from collections import deque
 import re
-import threading
+import time
+import multiprocessing as mp
+import os
 
 flags = tf.app.flags
 
@@ -103,21 +105,12 @@ flags.DEFINE_boolean(
     'If using flat files'
 )
 
+flags.DEFINE_string(
+    'proc', None,
+    'number of processes to use'
+)
+
 FLAGS = flags.FLAGS
-
-
-class myThread (threading.Thread):
-    def __init__(self, wav, tf_record_filename, labels_filename):
-        threading.Thread.__init__(self)
-        self.wav = wav
-        self.tf_record_filename = tf_record_filename
-        self.labels_filename = labels_filename
-
-    def run(self):
-        print("Starting " + self.wav)
-        embedding(self.wav, self.tf_record_filename, self.labels_filename)
-        print("Exiting " + self.wav)
-
 
 def get_last_row(csv_filename):
     with open(csv_filename, 'r') as f:
@@ -128,7 +121,7 @@ def get_last_row(csv_filename):
         return lastrow
 
 
-def embedding(wav, tf_record_filename, labels_filename):
+def embedding(wav, tf_record_filename):
     try:
         print(wav)
         f = open('csvfile.csv', 'a')
@@ -146,18 +139,19 @@ def embedding(wav, tf_record_filename, labels_filename):
             wav_filename = wav
 
         if FLAGS.ff:
+            # if using flat files (--ff) argument, will retreive class label from file name
             print("parsing flat file(s)...")
             class_label = (re.search('\(([^)]+)', wav).group(1)).capitalize()
             print("CLASS LABEL: " + class_label)
 
         else:
-            # name of subdirectory
+            # if not using the -ff argument, then the class label will be the name of subdirectory
             class_label = str((wav.split('/')[-2]).capitalize())
             print("CLASS LABEL: " + class_label)
 
-        # Acquiring Label ID
-        if labels_filename:
-            csv_file = csv.reader(open(labels_filename, "rb"), delimiter=",")
+        # Acquiring class label id 
+        if FLAGS.labels_file:
+            csv_file = csv.reader(open(FLAGS.labels_file, "rb"), delimiter=",")
             for row in csv_file:
                 if class_label in row[2]:
                     print(row)
@@ -165,15 +159,15 @@ def embedding(wav, tf_record_filename, labels_filename):
                     exist_in_csv = "yes"
                     break
 
-        #Need to append to csv file if label is STILL 0
-        if label_id == 0 and exist_in_csv == "no":
-            print("Label is still 0. Will append new entry in labels CSV file.")
-            last_row = get_last_row(labels_filename)
-            row = [int(last_row[0])+1, '/m/t3st/', class_label]
-            #new_row = "\n%s,%s,%s\n" % (int(last_row[0])+1, '/m/t3st/', class_label)
-            with open(labels_filename, 'a') as fd:
-                writer = csv.writer(fd)
-                writer.writerow(row)
+            #Need to append to csv file if label is STILL 0
+            if label_id == 0 and exist_in_csv == "no":
+                print("Label is still 0. Will append new entry in labels CSV file.")
+                last_row = get_last_row(FLAGS.labels_file)
+                row = [int(last_row[0])+1, '/m/t3st/', class_label]
+                #new_row = "\n%s,%s,%s\n" % (int(last_row[0])+1, '/m/t3st/', class_label)
+                with open(FLAGS.labels_file, 'a') as fd:
+                    writer = csv.writer(fd)
+                    writer.writerow(row)
 
         ############################################################################################
         batch = vggish_input.wavfile_to_examples(wav)
@@ -215,7 +209,7 @@ def embedding(wav, tf_record_filename, labels_filename):
             # embeddings corresponds to roughly a second of audio (96 10ms frames), and
             # the rows are written as a sequence of bytes-valued features, where each
             # feature value contains the 128 bytes of the whitened quantized embedding.
-            if type(wav) == str:
+            if type(wav) == str and FLAGS.labels_file:
                 seq_example = tf.train.SequenceExample(
                     context=tf.train.Features(feature={
                         'video_id': tf.train.Feature(bytes_list=tf.train.BytesList(value=[wav_filename.encode()])),
@@ -249,10 +243,13 @@ def embedding(wav, tf_record_filename, labels_filename):
         if writer:
             writer.close()
     except Exception:
-        print("error on: " + wav)
-
+        print("Error on: " + wav)
 
 def main(_):
+    if FLAGS.proc:
+        number_of_processes = FLAGS.proc
+    else:
+        number_of_processes = mp.cpu_count()-1
     # In this simple example, we run the examples from a single audio file through
     # the model. If none is provided, we generate a synthetic input.
     if FLAGS.wav_file:
@@ -263,8 +260,7 @@ def main(_):
         else:
             wav_file = FLAGS.wav_file
             tf_recordfile = FLAGS.tf_recordfile
-            labels_filename = FLAGS.labels_file
-            embedding(wav_file, tf_recordfile, labels_filename)
+            embedding(wav_file, tf_recordfile)
 
     elif FLAGS.target_directory and not FLAGS.subdirectory:
         # check to see if tf_directory is provided. If not, raise Exception.
@@ -276,15 +272,14 @@ def main(_):
             #print("TARGET DIRECTORY: " + target_directory)
             tf_directory = FLAGS.tf_directory
             #print("TF RECORD DIRECTORY: " + tf_directory)
-            labels_filename = FLAGS.labels_file
             # Iterate through each subdirectory
             subdirectories = []
-            threads = []
             for dirs in os.walk(target_directory):
                 subdirectories.append(dirs[0])
                 for sub in subdirectories[1:]:
                     #print("SUBDIRECTORY: " + sub)
                     # Iterate through each file in subdirectory
+                    pool = mp.Pool(int(number_of_processes))
                     for filename in os.listdir(sub):
                         if filename.endswith(".wav"):
                             #print("FILENAME: " + filename)
@@ -293,18 +288,13 @@ def main(_):
                             tf_recordfile = tf_directory + "/" + \
                                 subdirectory_name + "_" + wav_filename + ".tfrecord"
                             #print("TF_RECORD_FILENAME: " + tf_recordfile)
-                            embedding(target_directory + "/" + subdirectory_name + "/" + filename, tf_recordfile, labels_filename)
-                            #thread = myThread(
-                            # target_directory + "/" + subdirectory_name + "/" + filename, tf_recordfile, labels_filename)
-                            #threads.append(thread)
+                            #embedding(target_directory + "/" + subdirectory_name + "/" + filename, tf_recordfile)
+                            pool.apply_async(embedding, args=(target_directory + "/" + subdirectory_name + "/" + filename, tf_recordfile))
                             continue
                         else:
-                            continue
-            # for thread in threads:
-            #     print("Staring thread:" + thread.wav)
-            #     thread.start()
-            # for thread in threads:
-            #     thread.join()
+                            continue  
+                    pool.close()
+                    pool.join() 
 
     elif FLAGS.subdirectory and not FLAGS.target_directory:
         # check to see if target_directory or subdirectory or tf_directory were used. If so, raise Exception.
@@ -314,11 +304,7 @@ def main(_):
         if FLAGS.tf_directory:
             subdirectory = FLAGS.subdirectory
             #print("SUBDIRECTORY: " + subdirectory)
-            labels_filename = FLAGS.labels_file
-            f = open(labels_filename, 'a')
-            f.write('\n')  # Give your csv text here.
-            # Python will convert \n to os.linesep
-            f.close()
+            pool = mp.Pool(int(number_of_processes))
             for filename in os.listdir(subdirectory):
                 if filename.endswith(".wav"):
                     #print("FILENAME: " + filename)
@@ -329,16 +315,18 @@ def main(_):
                     tf_recordfile = tf_directory + "/" + \
                         subdirectory_name + "_" + wav_filename + ".tfrecord"
                     #print("TF_RECORD_FILENAME: " + tf_recordfile)
-                    embedding(subdirectory + "/" + filename,
-                              tf_recordfile, labels_filename)
+                    #embedding(subdirectory + "/" + filename, tf_recordfile)
+                    pool.apply_async(embedding, args=(subdirectory + "/" + filename, tf_recordfile))
                     continue
                 else:
                     continue
+            pool.close()
+            pool.join() 
 
     elif FLAGS.target_directory and FLAGS.subdirectory:
         target_directory = FLAGS.target_directory
         subdirectory = FLAGS.subdirectory
-        labels_filename = FLAGS.labels_file
+        pool = mp.Pool(int(number_of_processes))
         for filename in os.listdir(subdirectory):
             if filename.endswith(".wav"):
                 #print("FILENAME: " + filename)
@@ -349,11 +337,13 @@ def main(_):
                 tf_recordfile = tf_directory + "/" + \
                     subdirectory_name + "_" + wav_filename + ".tfrecord"
                 #print("TF_RECORD_FILENAME: " + tf_recordfile)
-                embedding(subdirectory + "/" + filename,
-                          tf_recordfile, labels_filename)
+                #embedding(subdirectory + "/" + filename, tf_recordfile)
+                pool.apply_async(embedding, args=(subdirectory + "/" + filename, tf_recordfile))
                 continue
             else:
                 continue
+        pool.close()
+        pool.join()
 
     else:
         # Write a WAV of a sine wav into an in-memory file object.
@@ -368,8 +358,7 @@ def main(_):
         wavfile.write(wav_file, sr, samples)
         wav_file.seek(0)
         tf_recordfile = "sin_wav_tfrecord"
-        embedding(wav_file, tf_recordfile, "no_labels_file")
-
+        embedding(wav_file, tf_recordfile)
 
 if __name__ == '__main__':
     tf.app.run()

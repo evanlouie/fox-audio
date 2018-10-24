@@ -14,3 +14,5 @@ vggish_model.ckpt
 
 deadpool*/
 tf_models*/
+
+*.tfrecord
