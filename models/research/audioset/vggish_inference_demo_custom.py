@@ -112,6 +112,7 @@ flags.DEFINE_string(
 
 FLAGS = flags.FLAGS
 
+
 def get_last_row(csv_filename):
     with open(csv_filename, 'r') as f:
         try:
@@ -149,7 +150,7 @@ def embedding(wav, tf_record_filename):
             class_label = str((wav.split('/')[-2]).capitalize())
             print("CLASS LABEL: " + class_label)
 
-        # Acquiring class label id 
+        # Acquiring class label id
         if FLAGS.labels_file:
             csv_file = csv.reader(open(FLAGS.labels_file, "rb"), delimiter=",")
             for row in csv_file:
@@ -159,7 +160,7 @@ def embedding(wav, tf_record_filename):
                     exist_in_csv = "yes"
                     break
 
-            #Need to append to csv file if label is STILL 0
+            # Need to append to csv file if label is STILL 0
             if label_id == 0 and exist_in_csv == "no":
                 print("Label is still 0. Will append new entry in labels CSV file.")
                 last_row = get_last_row(FLAGS.labels_file)
@@ -245,6 +246,7 @@ def embedding(wav, tf_record_filename):
     except Exception:
         print("Error on: " + wav)
 
+
 def main(_):
     if FLAGS.proc:
         number_of_processes = FLAGS.proc
@@ -289,12 +291,13 @@ def main(_):
                                 subdirectory_name + "_" + wav_filename + ".tfrecord"
                             #print("TF_RECORD_FILENAME: " + tf_recordfile)
                             #embedding(target_directory + "/" + subdirectory_name + "/" + filename, tf_recordfile)
-                            pool.apply_async(embedding, args=(target_directory + "/" + subdirectory_name + "/" + filename, tf_recordfile))
+                            pool.apply_async(embedding, args=(
+                                target_directory + "/" + subdirectory_name + "/" + filename, tf_recordfile))
                             continue
                         else:
-                            continue  
+                            continue
                     pool.close()
-                    pool.join() 
+                    pool.join()
 
     elif FLAGS.subdirectory and not FLAGS.target_directory:
         # check to see if target_directory or subdirectory or tf_directory were used. If so, raise Exception.
@@ -316,12 +319,13 @@ def main(_):
                         subdirectory_name + "_" + wav_filename + ".tfrecord"
                     #print("TF_RECORD_FILENAME: " + tf_recordfile)
                     #embedding(subdirectory + "/" + filename, tf_recordfile)
-                    pool.apply_async(embedding, args=(subdirectory + "/" + filename, tf_recordfile))
+                    pool.apply_async(embedding, args=(
+                        subdirectory + "/" + filename, tf_recordfile))
                     continue
                 else:
                     continue
             pool.close()
-            pool.join() 
+            pool.join()
 
     elif FLAGS.target_directory and FLAGS.subdirectory:
         target_directory = FLAGS.target_directory
@@ -338,7 +342,8 @@ def main(_):
                     subdirectory_name + "_" + wav_filename + ".tfrecord"
                 #print("TF_RECORD_FILENAME: " + tf_recordfile)
                 #embedding(subdirectory + "/" + filename, tf_recordfile)
-                pool.apply_async(embedding, args=(subdirectory + "/" + filename, tf_recordfile))
+                pool.apply_async(embedding, args=(
+                    subdirectory + "/" + filename, tf_recordfile))
                 continue
             else:
                 continue
@@ -359,6 +364,7 @@ def main(_):
         wav_file.seek(0)
         tf_recordfile = "sin_wav_tfrecord"
         embedding(wav_file, tf_recordfile)
+
 
 if __name__ == '__main__':
     tf.app.run()
