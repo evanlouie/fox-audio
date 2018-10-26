@@ -60,12 +60,9 @@ import csv
 import sys
 from collections import deque
 import re
-<<<<<<< HEAD
 import time
 import multiprocessing as mp
 import os
-=======
->>>>>>> master
 
 flags = tf.app.flags
 
@@ -108,14 +105,11 @@ flags.DEFINE_boolean(
     'If using flat files'
 )
 
-<<<<<<< HEAD
 flags.DEFINE_string(
     'proc', None,
     'number of processes to use'
 )
 
-=======
->>>>>>> master
 FLAGS = flags.FLAGS
 
 def get_last_row(csv_filename):
@@ -126,7 +120,6 @@ def get_last_row(csv_filename):
             lastrow = None
         return lastrow
 
-<<<<<<< HEAD
 
 def embedding(wav, tf_record_filename):
     try:
@@ -223,97 +216,6 @@ def embedding(wav, tf_record_filename):
                         'labels': tf.train.Feature(int64_list=tf.train.Int64List(value=[label_id]))
                     }),
                     feature_lists=tf.train.FeatureLists(feature_list={
-=======
-def embedding(wav, tf_record_filename, labels_filename):
-    f = open('csvfile.csv','a')
-    f.write('\n') #Give your csv text here.
-    ## Python will convert \n to os.linesep
-    f.close()
-
-    label_id = 0
-
-    # WAV Filename
-    if type(wav) == str:
-        wav_filename = wav.rsplit('/',1)[-1]
-    else:
-        wav_filename = wav
-
-    if FLAGS.ff:
-        print("parsing flat file(s)...")
-        class_label = (re.search('\(([^)]+)', wav).group(1)).capitalize()
-        print("CLASS LABEL: " + class_label)
-
-    else:
-        # name of subdirectory
-        class_label = str((wav.split('/')[-2]).capitalize())
-        print("CLASS LABEL: " + class_label)
-
-    # Acquiring Label ID
-    if labels_filename:
-        csv_file = csv.reader(open(labels_filename, "rb"), delimiter=",")
-        for row in csv_file:
-            if class_label in row[2]:
-                print(row)
-                label_id = int(row[0])
-                break
-
-    # Need to append to csv file if label is STILL 0
-    if label_id == 0:
-        print("Label is still 0. Will append new entry in labels CSV file.")
-        last_row = get_last_row(labels_filename)
-        row = [int(last_row[0])+1, '/m/t3st/', class_label] 
-        #new_row = "\n%s,%s,%s\n" % (int(last_row[0])+1, '/m/t3st/', class_label)
-        with open(labels_filename,'a') as fd:
-            writer=csv.writer(fd)
-            writer.writerow(row)
-
-    ############################################################################################
-    batch = vggish_input.wavfile_to_examples(wav)
-    #print(batch)
-
-    ############################################################################################
-    # Prepare a postprocessor to munge the model embeddings.
-    pproc = vggish_postprocess.Postprocessor(FLAGS.pca_params)
-
-    ############################################################################################
-
-    # If needed, prepare a record writer to store the postprocessed embeddings.
-    if FLAGS.tfrecord_file:
-        writer = tf.python_io.TFRecordWriter(tf_record_filename)
-    #if FLAGS.tf_directory:
-        #writer = tf.python_io.TFRecordWriter(tf_record_filename)
-    else:
-        writer = tf.python_io.TFRecordWriter(tf_record_filename)
-
-    with tf.Graph().as_default(), tf.Session() as sess:
-        # Define the model in inference mode, load the checkpoint, and
-        # locate input and output tensors.
-        vggish_slim.define_vggish_slim(training=False)
-        vggish_slim.load_vggish_slim_checkpoint(sess, FLAGS.checkpoint)
-        features_tensor = sess.graph.get_tensor_by_name(
-            vggish_params.INPUT_TENSOR_NAME)
-        embedding_tensor = sess.graph.get_tensor_by_name(
-            vggish_params.OUTPUT_TENSOR_NAME)
-
-        # Run inference and postprocessing.
-        [embedding_batch] = sess.run([embedding_tensor], feed_dict={features_tensor: batch})
-        #print(embedding_batch)
-        postprocessed_batch = pproc.postprocess(embedding_batch)
-        #print(postprocessed_batch)
-
-        # Write the postprocessed embeddings as a SequenceExample, in a similar
-        # format as the features released in AudioSet. Each row of the batch of
-        # embeddings corresponds to roughly a second of audio (96 10ms frames), and
-        # the rows are written as a sequence of bytes-valued features, where each
-        # feature value contains the 128 bytes of the whitened quantized embedding.
-        if type(wav) == str:
-            seq_example = tf.train.SequenceExample(
-                context=tf.train.Features(feature={
-                    'video_id': tf.train.Feature(bytes_list=tf.train.BytesList(value=[wav_filename.encode()])),
-                    'labels': tf.train.Feature(int64_list=tf.train.Int64List(value=[label_id]))
-                }),
-                feature_lists=tf.train.FeatureLists(feature_list={
->>>>>>> master
                         vggish_params.AUDIO_EMBEDDING_FEATURE_NAME: tf.train.FeatureList(feature=[tf.train.Feature(bytes_list=tf.train.BytesList(value=[embedding.tobytes()]))
                                                                                                   for embedding in postprocessed_batch
                                                                                                   ]
@@ -424,16 +326,7 @@ def main(_):
     elif FLAGS.target_directory and FLAGS.subdirectory:
         target_directory = FLAGS.target_directory
         subdirectory = FLAGS.subdirectory
-<<<<<<< HEAD
         pool = mp.Pool(int(number_of_processes))
-=======
-        #print("SUBDIRECTORY: " + subdirectory)
-        labels_filename = FLAGS.labels_file 
-        f = open(labels_filename,'a')
-        f.write('\n') #Give your csv text here.
-        ## Python will convert \n to os.linesep
-        f.close()
->>>>>>> master
         for filename in os.listdir(subdirectory):
             if filename.endswith(".wav"):
                 #print("FILENAME: " + filename)
