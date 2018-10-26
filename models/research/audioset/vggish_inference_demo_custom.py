@@ -57,9 +57,12 @@ import vggish_postprocess
 import vggish_slim
 import os
 import csv
-import sys 
+import sys
 from collections import deque
 import re
+import time
+import multiprocessing as mp
+import os
 
 flags = tf.app.flags
 
@@ -102,7 +105,13 @@ flags.DEFINE_boolean(
     'If using flat files'
 )
 
+flags.DEFINE_string(
+    'proc', None,
+    'number of processes to use'
+)
+
 FLAGS = flags.FLAGS
+
 
 def get_last_row(csv_filename):
     with open(csv_filename, 'r') as f:
@@ -112,222 +121,250 @@ def get_last_row(csv_filename):
             lastrow = None
         return lastrow
 
-def embedding(wav, tf_record_filename, labels_filename):
-    f = open('csvfile.csv','a')
-    f.write('\n') #Give your csv text here.
-    ## Python will convert \n to os.linesep
-    f.close()
 
-    label_id = 0
+def embedding(wav, tf_record_filename):
+    try:
+        print(wav)
+        f = open('csvfile.csv', 'a')
+        f.write('\n')  # Give your csv text here.
+        # Python will convert \n to os.linesep
+        f.close()
 
-    # WAV Filename
-    if type(wav) == str:
-        wav_filename = wav.rsplit('/',1)[-1]
-    else:
-        wav_filename = wav
+        label_id = 0
+        exist_in_csv = "no"
 
-    if FLAGS.ff:
-        print("parsing flat file(s)...")
-        class_label = (re.search('\(([^)]+)', wav).group(1)).capitalize()
-        print("CLASS LABEL: " + class_label)
-
-    else:
-        # name of subdirectory
-        class_label = str((wav.split('/')[-2]).capitalize())
-        print("CLASS LABEL: " + class_label)
-
-    # Acquiring Label ID
-    if labels_filename:
-        csv_file = csv.reader(open(labels_filename, "rb"), delimiter=",")
-        for row in csv_file:
-            if class_label in row[2]:
-                print(row)
-                label_id = int(row[0])
-                break
-
-    # Need to append to csv file if label is STILL 0
-    if label_id == 0:
-        print("Label is still 0. Will append new entry in labels CSV file.")
-        last_row = get_last_row(labels_filename)
-        row = [int(last_row[0])+1, '/m/t3st/', class_label] 
-        #new_row = "\n%s,%s,%s\n" % (int(last_row[0])+1, '/m/t3st/', class_label)
-        with open(labels_filename,'a') as fd:
-            writer=csv.writer(fd)
-            writer.writerow(row)
-
-    ############################################################################################
-    batch = vggish_input.wavfile_to_examples(wav)
-    #print(batch)
-
-    ############################################################################################
-    # Prepare a postprocessor to munge the model embeddings.
-    pproc = vggish_postprocess.Postprocessor(FLAGS.pca_params)
-
-    ############################################################################################
-
-    # If needed, prepare a record writer to store the postprocessed embeddings.
-    if FLAGS.tfrecord_file:
-        writer = tf.python_io.TFRecordWriter(tf_record_filename)
-    #if FLAGS.tf_directory:
-        #writer = tf.python_io.TFRecordWriter(tf_record_filename)
-    else:
-        writer = tf.python_io.TFRecordWriter(tf_record_filename)
-
-    with tf.Graph().as_default(), tf.Session() as sess:
-        # Define the model in inference mode, load the checkpoint, and
-        # locate input and output tensors.
-        vggish_slim.define_vggish_slim(training=False)
-        vggish_slim.load_vggish_slim_checkpoint(sess, FLAGS.checkpoint)
-        features_tensor = sess.graph.get_tensor_by_name(
-            vggish_params.INPUT_TENSOR_NAME)
-        embedding_tensor = sess.graph.get_tensor_by_name(
-            vggish_params.OUTPUT_TENSOR_NAME)
-
-        # Run inference and postprocessing.
-        [embedding_batch] = sess.run([embedding_tensor], feed_dict={features_tensor: batch})
-        #print(embedding_batch)
-        postprocessed_batch = pproc.postprocess(embedding_batch)
-        #print(postprocessed_batch)
-
-        # Write the postprocessed embeddings as a SequenceExample, in a similar
-        # format as the features released in AudioSet. Each row of the batch of
-        # embeddings corresponds to roughly a second of audio (96 10ms frames), and
-        # the rows are written as a sequence of bytes-valued features, where each
-        # feature value contains the 128 bytes of the whitened quantized embedding.
+        # WAV Filename
         if type(wav) == str:
-            seq_example = tf.train.SequenceExample(
-                context=tf.train.Features(feature={
-                    'video_id': tf.train.Feature(bytes_list=tf.train.BytesList(value=[wav_filename.encode()])),
-                    'labels': tf.train.Feature(int64_list=tf.train.Int64List(value=[label_id]))
-                }),
-                feature_lists=tf.train.FeatureLists(feature_list={
-                        vggish_params.AUDIO_EMBEDDING_FEATURE_NAME: tf.train.FeatureList(feature=[tf.train.Feature(bytes_list=tf.train.BytesList(value=[embedding.tobytes()]))
-                                    for embedding in postprocessed_batch
-                                ]
-                            )
-                    }
-                )
-            )
-            print(seq_example)
-            if writer:
-                writer.write(seq_example.SerializeToString())
+            wav_filename = wav.rsplit('/', 1)[-1]
         else:
-            seq_example = tf.train.SequenceExample(
-            feature_lists=tf.train.FeatureLists(feature_list={
-                    vggish_params.AUDIO_EMBEDDING_FEATURE_NAME: tf.train.FeatureList(feature=[tf.train.Feature(bytes_list=tf.train.BytesList(value=[embedding.tobytes()]))
-                                for embedding in postprocessed_batch
-                            ]
-                        )
-                }
-            )
-        )
-            print(seq_example)
-            if writer:
-                writer.write(seq_example.SerializeToString())
+            wav_filename = wav
 
-    if writer:
-        writer.close()
+        if FLAGS.ff:
+            # if using flat files (--ff) argument, will retreive class label from file name
+            print("parsing flat file(s)...")
+            class_label = (re.search('\(([^)]+)', wav).group(1)).capitalize()
+            print("CLASS LABEL: " + class_label)
+
+        else:
+            # if not using the -ff argument, then the class label will be the name of subdirectory
+            class_label = str((wav.split('/')[-2]).capitalize())
+            print("CLASS LABEL: " + class_label)
+
+        # Acquiring class label id
+        if FLAGS.labels_file:
+            csv_file = csv.reader(open(FLAGS.labels_file, "rb"), delimiter=",")
+            for row in csv_file:
+                if class_label in row[2]:
+                    print(row)
+                    label_id = int(row[0])
+                    exist_in_csv = "yes"
+                    break
+
+            # Need to append to csv file if label is STILL 0
+            if label_id == 0 and exist_in_csv == "no":
+                print("Label is still 0. Will append new entry in labels CSV file.")
+                last_row = get_last_row(FLAGS.labels_file)
+                row = [int(last_row[0])+1, '/m/t3st/', class_label]
+                #new_row = "\n%s,%s,%s\n" % (int(last_row[0])+1, '/m/t3st/', class_label)
+                with open(FLAGS.labels_file, 'a') as fd:
+                    writer = csv.writer(fd)
+                    writer.writerow(row)
+
+        ############################################################################################
+        batch = vggish_input.wavfile_to_examples(wav)
+        # print(batch)
+
+        ############################################################################################
+        # Prepare a postprocessor to munge the model embeddings.
+        pproc = vggish_postprocess.Postprocessor(FLAGS.pca_params)
+
+        ############################################################################################
+
+        # If needed, prepare a record writer to store the postprocessed embeddings.
+        if FLAGS.tfrecord_file:
+            writer = tf.python_io.TFRecordWriter(tf_record_filename)
+        # if FLAGS.tf_directory:
+            #writer = tf.python_io.TFRecordWriter(tf_record_filename)
+        else:
+            writer = tf.python_io.TFRecordWriter(tf_record_filename)
+
+        with tf.Graph().as_default(), tf.Session() as sess:
+            # Define the model in inference mode, load the checkpoint, and
+            # locate input and output tensors.
+            vggish_slim.define_vggish_slim(training=False)
+            vggish_slim.load_vggish_slim_checkpoint(sess, FLAGS.checkpoint)
+            features_tensor = sess.graph.get_tensor_by_name(
+                vggish_params.INPUT_TENSOR_NAME)
+            embedding_tensor = sess.graph.get_tensor_by_name(
+                vggish_params.OUTPUT_TENSOR_NAME)
+
+            # Run inference and postprocessing.
+            [embedding_batch] = sess.run([embedding_tensor], feed_dict={
+                                         features_tensor: batch})
+            # print(embedding_batch)
+            postprocessed_batch = pproc.postprocess(embedding_batch)
+            # print(postprocessed_batch)
+
+            # Write the postprocessed embeddings as a SequenceExample, in a similar
+            # format as the features released in AudioSet. Each row of the batch of
+            # embeddings corresponds to roughly a second of audio (96 10ms frames), and
+            # the rows are written as a sequence of bytes-valued features, where each
+            # feature value contains the 128 bytes of the whitened quantized embedding.
+            if type(wav) == str and FLAGS.labels_file:
+                seq_example = tf.train.SequenceExample(
+                    context=tf.train.Features(feature={
+                        'video_id': tf.train.Feature(bytes_list=tf.train.BytesList(value=[wav_filename.encode()])),
+                        'labels': tf.train.Feature(int64_list=tf.train.Int64List(value=[label_id]))
+                    }),
+                    feature_lists=tf.train.FeatureLists(feature_list={
+                        vggish_params.AUDIO_EMBEDDING_FEATURE_NAME: tf.train.FeatureList(feature=[tf.train.Feature(bytes_list=tf.train.BytesList(value=[embedding.tobytes()]))
+                                                                                                  for embedding in postprocessed_batch
+                                                                                                  ]
+                                                                                         )
+                    }
+                    )
+                )
+                print(seq_example)
+                if writer:
+                    writer.write(seq_example.SerializeToString())
+            else:
+                seq_example = tf.train.SequenceExample(
+                    feature_lists=tf.train.FeatureLists(feature_list={
+                        vggish_params.AUDIO_EMBEDDING_FEATURE_NAME: tf.train.FeatureList(feature=[tf.train.Feature(bytes_list=tf.train.BytesList(value=[embedding.tobytes()]))
+                                                                                                  for embedding in postprocessed_batch
+                                                                                                  ]
+                                                                                         )
+                    }
+                    )
+                )
+                print(seq_example)
+                if writer:
+                    writer.write(seq_example.SerializeToString())
+
+        if writer:
+            writer.close()
+    except Exception:
+        print("Error on: " + wav)
+
 
 def main(_):
-  # In this simple example, we run the examples from a single audio file through
-  # the model. If none is provided, we generate a synthetic input.
-  if FLAGS.wav_file:
-      #check to see if target_directory or subdirectory or tf_directory were used. If so, raise Exception.
-      if FLAGS.target_directory or FLAGS.subdirectory or FLAGS.tf_directory:
-        raise ValueError('If specifying the --wav_file argument, be sure to not use any of the following: --target_directory, --subdirectory, --tf_directory')
-      else:
-        wav_file = FLAGS.wav_file
-        tf_recordfile = FLAGS.tf_recordfile
-        labels_filename = FLAGS.labels_file
-        embedding(wav_file, tf_recordfile, labels_filename)
+    if FLAGS.proc:
+        number_of_processes = FLAGS.proc
+    else:
+        number_of_processes = mp.cpu_count()-1
+    # In this simple example, we run the examples from a single audio file through
+    # the model. If none is provided, we generate a synthetic input.
+    if FLAGS.wav_file:
+        # check to see if target_directory or subdirectory or tf_directory were used. If so, raise Exception.
+        if FLAGS.target_directory or FLAGS.subdirectory or FLAGS.tf_directory:
+            raise ValueError(
+                'If specifying the --wav_file argument, be sure to not use any of the following: --target_directory, --subdirectory, --tf_directory')
+        else:
+            wav_file = FLAGS.wav_file
+            tf_recordfile = FLAGS.tf_recordfile
+            embedding(wav_file, tf_recordfile)
 
-  elif FLAGS.target_directory and not FLAGS.subdirectory:
-      #check to see if tf_directory is provided. If not, raise Exception.
-      if FLAGS.tfrecord_file:
-          raise ValueError('If specifying the --subdirectory argument, be sure to also include the --tf_directory argument')
-      if FLAGS.tf_directory:
-          target_directory = FLAGS.target_directory
-          #print("TARGET DIRECTORY: " + target_directory)
-          tf_directory = FLAGS.tf_directory
-          #print("TF RECORD DIRECTORY: " + tf_directory)
-          labels_filename = FLAGS.labels_file
-          #Iterate through each subdirectory
-          subdirectories = []
-          for dirs in os.walk(target_directory):
-              subdirectories.append(dirs[0])
-              for sub in subdirectories[1:]:
-                #print("SUBDIRECTORY: " + sub)
-                #Iterate through each file in subdirectory
-                for filename in os.listdir(sub):
-                 if filename.endswith(".wav"):
-                     #print("FILENAME: " + filename)
-                     subdirectory_name = sub.rsplit('/',1)[-1]
-                     wav_filename = filename.rsplit('.',1)[0]
-                     tf_recordfile = tf_directory + "/" + subdirectory_name + "_" + wav_filename + ".tfrecord"
-                     #print("TF_RECORD_FILENAME: " + tf_recordfile)
-                     embedding(target_directory + "/" + subdirectory_name + "/" + filename, tf_recordfile, labels_filename)
-                     continue
-                 else:
-                     continue
+    elif FLAGS.target_directory and not FLAGS.subdirectory:
+        # check to see if tf_directory is provided. If not, raise Exception.
+        if FLAGS.tfrecord_file:
+            raise ValueError(
+                'If specifying the --subdirectory argument, be sure to also include the --tf_directory argument')
+        if FLAGS.tf_directory:
+            target_directory = FLAGS.target_directory
+            #print("TARGET DIRECTORY: " + target_directory)
+            tf_directory = FLAGS.tf_directory
+            #print("TF RECORD DIRECTORY: " + tf_directory)
+            # Iterate through each subdirectory
+            subdirectories = []
+            for dirs in os.walk(target_directory):
+                subdirectories.append(dirs[0])
+                for sub in subdirectories[1:]:
+                    #print("SUBDIRECTORY: " + sub)
+                    # Iterate through each file in subdirectory
+                    pool = mp.Pool(int(number_of_processes))
+                    for filename in os.listdir(sub):
+                        if filename.endswith(".wav"):
+                            #print("FILENAME: " + filename)
+                            subdirectory_name = sub.rsplit('/', 1)[-1]
+                            wav_filename = filename.rsplit('.', 1)[0]
+                            tf_recordfile = tf_directory + "/" + \
+                                subdirectory_name + "_" + wav_filename + ".tfrecord"
+                            #print("TF_RECORD_FILENAME: " + tf_recordfile)
+                            #embedding(target_directory + "/" + subdirectory_name + "/" + filename, tf_recordfile)
+                            pool.apply_async(embedding, args=(
+                                target_directory + "/" + subdirectory_name + "/" + filename, tf_recordfile))
+                            continue
+                        else:
+                            continue
+                    pool.close()
+                    pool.join()
 
-  elif FLAGS.subdirectory and not FLAGS.target_directory:
-      #check to see if target_directory or subdirectory or tf_directory were used. If so, raise Exception.
-      if FLAGS.tfrecord_file:
-          raise ValueError('If specifying the --subdirectory argument, be sure to also include the --tf_directory argument')
-      if FLAGS.tf_directory:
+    elif FLAGS.subdirectory and not FLAGS.target_directory:
+        # check to see if target_directory or subdirectory or tf_directory were used. If so, raise Exception.
+        if FLAGS.tfrecord_file:
+            raise ValueError(
+                'If specifying the --subdirectory argument, be sure to also include the --tf_directory argument')
+        if FLAGS.tf_directory:
+            subdirectory = FLAGS.subdirectory
+            #print("SUBDIRECTORY: " + subdirectory)
+            pool = mp.Pool(int(number_of_processes))
+            for filename in os.listdir(subdirectory):
+                if filename.endswith(".wav"):
+                    #print("FILENAME: " + filename)
+                    tf_directory = FLAGS.tf_directory
+                    #print("TF RECORD DIRECTORY: " + tf_directory)
+                    subdirectory_name = subdirectory.rsplit('/', 1)[-1]
+                    wav_filename = filename.rsplit('.', 1)[0]
+                    tf_recordfile = tf_directory + "/" + \
+                        subdirectory_name + "_" + wav_filename + ".tfrecord"
+                    #print("TF_RECORD_FILENAME: " + tf_recordfile)
+                    #embedding(subdirectory + "/" + filename, tf_recordfile)
+                    pool.apply_async(embedding, args=(
+                        subdirectory + "/" + filename, tf_recordfile))
+                    continue
+                else:
+                    continue
+            pool.close()
+            pool.join()
+
+    elif FLAGS.target_directory and FLAGS.subdirectory:
+        target_directory = FLAGS.target_directory
         subdirectory = FLAGS.subdirectory
-        #print("SUBDIRECTORY: " + subdirectory)
-        labels_filename = FLAGS.labels_file 
-        f = open(labels_filename,'a')
-        f.write('\n') #Give your csv text here.
-        ## Python will convert \n to os.linesep
-        f.close()
+        pool = mp.Pool(int(number_of_processes))
         for filename in os.listdir(subdirectory):
             if filename.endswith(".wav"):
                 #print("FILENAME: " + filename)
                 tf_directory = FLAGS.tf_directory
                 #print("TF RECORD DIRECTORY: " + tf_directory)
-                subdirectory_name = subdirectory.rsplit('/',1)[-1]
-                wav_filename = filename.rsplit('.',1)[0]
-                tf_recordfile = tf_directory + "/" + subdirectory_name + "_" + wav_filename + ".tfrecord"
+                subdirectory_name = subdirectory.rsplit('/', 1)[-1]
+                wav_filename = filename.rsplit('.', 1)[0]
+                tf_recordfile = tf_directory + "/" + \
+                    subdirectory_name + "_" + wav_filename + ".tfrecord"
                 #print("TF_RECORD_FILENAME: " + tf_recordfile)
-                embedding(subdirectory + "/" + filename, tf_recordfile, labels_filename)
+                #embedding(subdirectory + "/" + filename, tf_recordfile)
+                pool.apply_async(embedding, args=(
+                    subdirectory + "/" + filename, tf_recordfile))
                 continue
             else:
-                continue 
+                continue
+        pool.close()
+        pool.join()
 
-  elif FLAGS.target_directory and FLAGS.subdirectory:
-    target_directory = FLAGS.target_directory
-    subdirectory = FLAGS.subdirectory 
-    labels_filename = FLAGS.labels_file
-    for filename in os.listdir(subdirectory):
-        if filename.endswith(".wav"):
-            #print("FILENAME: " + filename)
-            tf_directory = FLAGS.tf_directory
-            #print("TF RECORD DIRECTORY: " + tf_directory)
-            subdirectory_name = subdirectory.rsplit('/',1)[-1]
-            wav_filename = filename.rsplit('.',1)[0]
-            tf_recordfile = tf_directory + "/" + subdirectory_name + "_" + wav_filename + ".tfrecord"
-            #print("TF_RECORD_FILENAME: " + tf_recordfile)
-            embedding(subdirectory + "/" + filename, tf_recordfile, labels_filename)
-            continue
-        else:
-            continue 
-    
-  else:
-    # Write a WAV of a sine wav into an in-memory file object.
-    num_secs = 5
-    freq = 1000
-    sr = 44100
-    t = np.linspace(0, num_secs, int(num_secs * sr))
-    x = np.sin(2 * np.pi * freq * t)
-    # Convert to signed 16-bit samples.
-    samples = np.clip(x * 32768, -32768, 32767).astype(np.int16)
-    wav_file = six.BytesIO()
-    wavfile.write(wav_file, sr, samples)
-    wav_file.seek(0)
-    tf_recordfile = "sin_wav_tfrecord"
-    embedding(wav_file, tf_recordfile, "no_labels_file")
+    else:
+        # Write a WAV of a sine wav into an in-memory file object.
+        num_secs = 5
+        freq = 1000
+        sr = 44100
+        t = np.linspace(0, num_secs, int(num_secs * sr))
+        x = np.sin(2 * np.pi * freq * t)
+        # Convert to signed 16-bit samples.
+        samples = np.clip(x * 32768, -32768, 32767).astype(np.int16)
+        wav_file = six.BytesIO()
+        wavfile.write(wav_file, sr, samples)
+        wav_file.seek(0)
+        tf_recordfile = "sin_wav_tfrecord"
+        embedding(wav_file, tf_recordfile)
+
 
 if __name__ == '__main__':
     tf.app.run()
