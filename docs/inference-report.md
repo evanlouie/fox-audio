@@ -11,7 +11,7 @@ Note: LSTM AudioSet (Bal + Unbal) at target 0.01 loss is still training. Results
 | LSTM                     | AudioSet (Bal + Unbal)  | 4010  | ~4.00 | 0.527   | 0.341    | 0.236 | 0.337 | 9.632698  |
 | LSTM                     | AudioSet (Bal + Unbal)  | 18020 | ~3.35 | 0.562   | 0.377    | 0.273 | 0.378 | 9.484769  |
 | LSTM                     | AudioSet (Bal + Unbal)  | 56040 | ~0.06 | 0.529   | 0.341    | 0.189 | 0.299 | 17.330322 |
-| LSTM                     | AudioSet (Bal + Unbal)  | 18020 | ~0.01 |         |          |       |       |           |
+| LSTM                     | AudioSet (Bal + Unbal)  | 18020 | ~0.01 | 0.523   | 0.334    | 0.174 | 0.286 | 22.703874 |
 
 
 ## Data Used
@@ -36,8 +36,8 @@ Note: LSTM AudioSet (Bal + Unbal) at target 0.01 loss is still training. Results
 | LSTM                     | AudioSet (Bal + Unbal)         | 3.35 | Deadpool 2 | 9 / 25              | 24                      |
 | LSTM                     | AudioSet (Bal + Unbal)         | 0.60 | Deadpool 1 | 1 / 14              | 9                       |
 | LSTM                     | AudioSet (Bal + Unbal)         | 0.60 | Deadpool 2 | 3 / 25              | 14                      |
-| LSTM                     | AudioSet (Bal + Unbal)         | 0.01 | Deadpool 1 | Coming soon         | Coming soon             |
-| LSTM                     | AudioSet (Bal + Unbal)         | 0.01 | Deadpool 2 | Coming soon         | Coming soon             |
+| LSTM                     | AudioSet (Bal + Unbal)         | 0.01 | Deadpool 1 | 2 / 14              | 22                      |
+| LSTM                     | AudioSet (Bal + Unbal)         | 0.01 | Deadpool 2 | 3/ 25               | 33                      |
 
 *Refer to bottom to see list of used audio samples
 
@@ -59,11 +59,8 @@ General Summary:
 
 ## Next Steps
 
-Only the balanced training set was utilized during training. This left a large amount of unused data unused for training.
-The unbalanced training set was not used as to not make the model weights imbalanced, however it could prove useful to 
-try and utilize the unbalanced training in addition to the balanced.
-
-Transfer Learning is an avenue which should definitely be investigated as well. Utilizing a frozen LSTM model based on
+Transfer Learning is an avenue which should be investigated. The fact that AudioSet consists of so many classifiers most 
+likely means the model is getting too "confused" in regards to it is looking for. Utilizing a frozen LSTM model based on
 AudioSet and retraining the top layers to only detect gunshots using only Fox data may prove much more effective than
 the Adaptive Learning method used in this report.
 
