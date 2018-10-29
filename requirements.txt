@@ -25,6 +25,7 @@ pylint==2.1.1
 resampy==0.2.1
 rope==0.11.0
 scipy==1.1.0
+setuptools==39.1.0
 six==1.11.0
 tensorboard==1.11.0
 tensorflow==1.11.0
