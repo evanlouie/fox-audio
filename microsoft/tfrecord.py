@@ -4,7 +4,8 @@ import tensorflow as tf
 
 
 def read(record_path: str, is_sequence_example: bool = True) -> List:
-    """Return the contents of a TF Record
+    """
+    Return the contents of a TF Record
     Note: Tensorflow uses weird reflection on protobufs. The FromString method does exist; disable E1101 warning
     """
     return [
