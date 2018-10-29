@@ -1,10 +1,12 @@
-import argparse
 from typing import List
+import argparse
 import tensorflow as tf
 
 
 def read(record_path: str, is_sequence_example: bool = True) -> List:
-    # Tensorflow uses weird reflection on protobufs. The FromString method does exist; disable E1101 warning
+    """Return the contents of a TF Record
+    Note: Tensorflow uses weird reflection on protobufs. The FromString method does exist; disable E1101 warning
+    """
     return [
         (
             tf.train.SequenceExample.FromString(record)  # pylint: disable=E1101
