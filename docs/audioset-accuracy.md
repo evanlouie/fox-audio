@@ -1,11 +1,4 @@
-# As a DS, I want to be able to generate a accurate model based on AudioSet dataset (Spike)
-[User Story 63](https://dev.azure.com/epicstuff/active%20learning/_workitems/edit/63)
-
-## Learnings: (Needs to be formatted)
-
 # Audio Model Accuracy: FAQ
-
-
 
 - [What is the Eval.py script doing?](#What-is-the-Eval.py-script-doing)
 - [What is Loss?](#what-is-loss?)
