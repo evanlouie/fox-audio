@@ -4,16 +4,14 @@
 
 Any reasonably recent version of these packages should work. TensorFlow should be at least version 1.0. We have tested with Python 2.7.6 and 3.4.3 on an Ubuntu-like system with NumPy v1.13.1, SciPy v0.19.1, resampy v0.1.5, TensorFlow v1.2.1, and Six v1.10.0.
 
-
 **Azure Data Science VM (Linux)**
 
-* Python - 3.5.5	N/A
-* Numpy - 1.14.5
-* Scipy - 1.1.0
-* Resampy - 0.2.1
-* Tensorflow-GPU - 1.10.0
-* Six - 1.11.0
-
+- Python - 3.5.5 N/A
+- Numpy - 1.14.5
+- Scipy - 1.1.0
+- Resampy - 0.2.1
+- Tensorflow-GPU - 1.10.0
+- Six - 1.11.0
 
 ### Enabling GPU Device
 
@@ -21,49 +19,49 @@ If you have a different GPU / OS please go to [official website](https://develop
 
 This command can help with find information on your GPU:
 
-```
+```sh
 sudo lshw -C display
 ```
 
 First, install the latest version of Docker:
 
-```
-$ sudo apt-get update
-$ sudo apt-get install \
+```sh
+sudo apt-get update
+sudo apt-get install \
     apt-transport-https \
     ca-certificates \
     curl \
     software-properties-common
-$ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-$ sudo add-apt-repository \
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository \
    "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
    $(lsb_release -cs) \
    stable"
-$ sudo apt-get update
-$ sudo apt-get install docker-ce
+sudo apt-get update
+sudo apt-get install docker-ce
 ```
 
 To install CUDA drivers for Ubuntu 16.04 for NVIDIA Tesla k80:
 
-```
-$ wget http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/cuda-repo-ubuntu1604_8.0.44-1_amd64.deb
-$ sudo dpkg -i cuda-repo-ubuntu1604_8.0.44-1_amd64.deb
-$ sudo apt-get update
-$ sudo apt-get -f install
-$ sudo apt-get install cuda
+```sh
+wget http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/cuda-repo-ubuntu1604_8.0.44-1_amd64.deb
+sudo dpkg -i cuda-repo-ubuntu1604_8.0.44-1_amd64.deb
+sudo apt-get update
+sudo apt-get -f install
+sudo apt-get install cuda
 ```
 
-nvidia-smi is NVIDIA's System Management Interface. It provides a command line utility that allows monitoring and management capabilities for NVIDIA devices. 
+nvidia-smi is NVIDIA's System Management Interface. It provides a command line utility that allows monitoring and management capabilities for NVIDIA devices.
 
 To install nvidia-docker and test nvidia-smi:
 
-```
-$ sudo apt-get install nvidia-docker2
-$ nvidia-docker run --rm nvidia/cuda nvidia-smi
+```sh
+sudo apt-get install nvidia-docker2
+nvidia-docker run --rm nvidia/cuda nvidia-smi
 
-*NOTE: A VM restart may be required for packages to be fully installed.
-
+# *NOTE: A VM restart may be required for packages to be fully installed.
 ```
+
 Example output:
 
 ```
@@ -86,10 +84,9 @@ Wed Sep 26 21:17:23 2018
 +-----------------------------------------------------------------------------+
 ```
 
+### Environment Testing Set Up
 
-### Environment Testing Set Up 
-
-``` sh
+```sh
 # You can optionally install and test VGGish within a Python virtualenv, which
 # is useful for isolating changes from the rest of your system. For example, you
 # may have an existing version of some packages that you do not want to upgrade,
@@ -104,67 +101,67 @@ Wed Sep 26 21:17:23 2018
 #   $ deactivate
 # Within the virtual environment, do not use 'sudo'.
 # Upgrade pip first.
-$ sudo python -m pip install --upgrade pip
+sudo python -m pip install --upgrade pip
 # Install dependences. Resampy needs to be installed after NumPy and SciPy
 # are already installed.
-$ sudo pip install numpy scipy
-$ sudo pip install resampy tensorflow six
+sudo pip install numpy scipy
+sudo pip install resampy tensorflow six
 # Clone TensorFlow models repo into a 'models' directory.
-$ git clone https://github.com/tensorflow/models.git
-$ cd models/research/audioset
+git clone https://github.com/tensorflow/models.git
+cd models/research/audioset
 # Download data files into same directory as code.
-$ curl -O https://storage.googleapis.com/audioset/vggish_model.ckpt
-$ curl -O https://storage.googleapis.com/audioset/vggish_pca_params.npz
+curl -O https://storage.googleapis.com/audioset/vggish_model.ckpt
+curl -O https://storage.googleapis.com/audioset/vggish_pca_params.npz
 # Installation ready, let's test it.
-$ python vggish_smoke_test.py
+python vggish_smoke_test.py
 # If we see "Looks Good To Me", then we're all set.
 ```
-> From <https://github.com/tensorflow/models/tree/master/research/audioset> 
+
+> From <https://github.com/tensorflow/models/tree/master/research/audioset>
 
 ## Custom Audio Conversion
 
-Required Input  
--  A WAV file (assumed to contain signed 16-bit PCM samples) 
-    - This wav file is converted into log mel spectrogram examples, feed into VGGish, the raw embedding output is whitened and quantized, and the postprocessed embeddings are optionally written in a SequenceExample to a TFRecord file (using the same format as the embedding features released in AudioSet).
-	- Size of the file - The VGG inference script  "Converts audio waveform into an array of examples for VGGish."
-	    - Input: data: np.array of either one dimension (mono) or two dimensions(multi-channel, with the outer dimension representing channels). Each sample is generally expected to lie in the range [-1.0, +1.0], although this is not required.
+Required Input
 
-		- Output: 3-D np.array of shape [num_examples, num_frames, num_bands] which represents a sequence of examples, each of which contains a patch of log mel spectrogram, covering num_frames frames of audio and num_bands mel frequency bands, where the frame length is vggish_params.STFT_HOP_LENGTH_SECONDS.
+- A WAV file (assumed to contain signed 16-bit PCM samples)
+
+  - This wav file is converted into log mel spectrogram examples, feed into VGGish, the raw embedding output is whitened and quantized, and the postprocessed embeddings are optionally written in a SequenceExample to a TFRecord file (using the same format as the embedding features released in AudioSet).
+  - Size of the file - The VGG inference script "Converts audio waveform into an array of examples for VGGish."
+
+    - Input: data: np.array of either one dimension (mono) or two dimensions(multi-channel, with the outer dimension representing channels). Each sample is generally expected to lie in the range [-1.0, +1.0], although this is not required.
+
+    - Output: 3-D np.array of shape [num_examples, num_frames, num_bands] which represents a sequence of examples, each of which contains a patch of log mel spectrogram, covering num_frames frames of audio and num_bands mel frequency bands, where the frame length is vggish_params.STFT_HOP_LENGTH_SECONDS.
 
 - Converting to .WAV 16-bit PCM Sample
-	- Audio Samples
-		- I am using 2 audio samples for gunshots provided by freesound.org
-			- Sample 1 - https://freesound.org/people/watupgroupie/sounds/36815/
-			- Sample 2 - https://freesound.org/people/fastson/sounds/399065/
-	- Converting WAV 16bit signed PCM
-		- [Online-Convert](https://www.online-convert.com)
-			- No changes in the sampling rate
-			- No Changes to the audio channel
-			- In advanced options select the following as your PCM format PCM 16bit signed Small Endian
-				- Sample 1 - https://rtwrt.blob.core.windows.net/post5-audioset/samples/sample1_16bit_PCM_signed_smallendian.wav
-				- Sample 2 - https://rtwrt.blob.core.windows.net/post5-audioset/samples/sample2_16bit_PCM_signed_smallendian.wav
-
+  - Audio Samples
+    - I am using 2 audio samples for gunshots provided by freesound.org
+      - Sample 1 - https://freesound.org/people/watupgroupie/sounds/36815/
+      - Sample 2 - https://freesound.org/people/fastson/sounds/399065/
+  - Converting WAV 16bit signed PCM
+    - [Online-Convert](https://www.online-convert.com)
+      - No changes in the sampling rate
+      - No Changes to the audio channel
+      - In advanced options select the following as your PCM format PCM 16bit signed Small Endian
+        - Sample 1 - https://rtwrt.blob.core.windows.net/post5-audioset/samples/sample1_16bit_PCM_signed_smallendian.wav
+        - Sample 2 - https://rtwrt.blob.core.windows.net/post5-audioset/samples/sample2_16bit_PCM_signed_smallendian.wav
 
 | Clip  | Converter        | Channel   | Sample Rate | Endian | PCM-16bit | Signed |
 | ----- | :--------------: | --------: | ----------: | ------ | --------- | ------ |
 | Clip  | Online-Converter | No-Change | No-Change   | Small  | Yes       | Yes    |
 | Clip2 | Online-Converter | No-Change | No-Change   | Small  | Yes       | Yes    |
 
-> Upload to a blob & Curl your files - 
-`$ curl -O https://rtwrt.blob.core.windows.net/post5-audioset/samples/sample1_16bit_PCM_signed_smallendian.wav
+> Upload to a blob & Curl your files -
+> `$ curl -O https://rtwrt.blob.core.windows.net/post5-audioset/samples/sample1_16bit_PCM_signed_smallendian.wav
 
 ## VGG Conversion Tester
 
 Use vggish_inference_demo.py to create a VGG analysis of your custom wave file in a tensor flow record. Specify the path to the wav file and the output path of where you want the tfrecord to be generated.
 
-`python vggish_inference_demo.py --wav_file clip2-02_16bit_PCM_signed_smallendian.wav \
-                                    --tfrecord_file tfrecrods/new2 \
-                                    --checkpoint /path/to/model/checkpoint \
-                                    --pca_params /path/to/pca/params`
-                                    
+`python vggish_inference_demo.py --wav_file clip2-02_16bit_PCM_signed_smallendian.wav \ --tfrecord_file tfrecrods/new2 \ --checkpoint /path/to/model/checkpoint \ --pca_params /path/to/pca/params`
+
 > Due to an outdated version of audioset leveraging the video_id parameter replace your vgg_inference_demo.py with the one provided below. We added a context property that appends a video_id property based on the name of the wav file inputted.
 
-``` python
+```python
 # Copyright 2017 The TensorFlow Authors All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -322,7 +319,8 @@ def main(_):
 if __name__ == '__main__':
     tf.app.run()
 ```
-There is also a variation of vggish_inference_demo.py (vggish_inference_demo_custom.py) that supports the capability of inputting a directory of subdirectories that contain multiple wav files, and converting them all to tensor flow records. For example:
+
+There is also a variation of vggish_inference_demo.py (`microsoft/vggish_inference.py`) that supports the capability of inputting a directory of subdirectories that contain multiple wav files, and converting them all to tensor flow records. For example:
 
 ```
 [target_dir]_
@@ -333,26 +331,35 @@ There is also a variation of vggish_inference_demo.py (vggish_inference_demo_cus
              |___[explosion]
                           |__baz.wav
                           |__xyz.wav
-
 ```
+
 To do this, the command line changes slightly:
 
-`python vggish_inference_demo_custom.py --target_directory /path/to/wav/files \
-                                    --tf_directory /path/to/tfrecords \
-                                    --checkpoint /path/to/model/checkpoint \
-                                    --pca_params /path/to/pca/params
-				    --labels_file /path/to/labels/csv/file \`
+```sh
+python microsoft/vggish_inference.py \
+    --target_directory /path/to/wav/files \
+    --tf_directory /path/to/tfrecords \
+    --checkpoint /path/to/model/checkpoint \
+    --pca_params /path/to/pca/params \
+    --labels_file /path/to/labels/csv/file
+```
 
 The vggish_inference_demo.py is specifically used to label tensor flow records with the appropriate class label according to a label csv file. If you would like to convert wav files to generic tensorflow record files (without labels), use the vggish_inference_score.py or do not specify the optional --labels_file argument in vggish_inference_demo.py
- 
-When using the --target_directory argument, the --tf_directory argument needs to be specified. You can specify the --subdirectory arugment, which also requires --tf_directory. 
+
+When using the --target_directory argument, the --tf_directory argument needs to be specified. You can specify the --subdirectory arugment, which also requires --tf_directory.
 
 There is also the --ff flag, which stangs for 'flat file'. Use this argument in the case where you have a directory of files, as opposed to a directory of subdirectories, and require to parse class labels from the name of wav files themselves as opposed to using subdirectory names.
 
-Keep in mind that the vggish_inference_demo_custom.py is a multithreaded program and may consume significant system resources when running. In order to control the number of Python processes that are spawned to run the program, use the --proc argument followed by the number of processes.
+Keep in mind that the `microsoft/vggish_inference.py` is a multithreaded program and may consume significant system resources when running. In order to control the number of Python processes that are spawned to run the program, use the --proc argument followed by the number of processes.
 
-```
-python vggish_inference_demo_custom.py --tf_directory /Microsoft/fox-audio/tfrecord_output --checkpoint /Microsoft/fox-audio/vggish_model.ckpt --pca_params /Microsoft/fox-audio/vggish_pca_params.npz --labels_file /Microsoft/fox-audio/class_labels_indices.csv --subdirectory /Microsoft/fox-audio/wav/labels_testing/other --proc 10
+```sh
+python microsoft/vggish_inference.py \
+    --tf_directory /Microsoft/fox-audio/tfrecord_output \
+    --checkpoint /Microsoft/fox-audio/vggish_model.ckpt \
+    --pca_params /Microsoft/fox-audio/vggish_pca_params.npz \
+    --labels_file /Microsoft/fox-audio/class_labels_indices.csv \
+    --subdirectory /Microsoft/fox-audio/wav/labels_testing/other \
+    --proc 10
 ```
 
 ## White Noise Padding
@@ -361,15 +368,16 @@ The white_noise_padding.py is designed to pad wav files to a preferred length of
 
 In order to use the script, run the following command in terminal:
 
-```
+```sh
 python white_noise_padding.py /path/to/wav/file
 ```
 
 To run the white_noise_padding.py in batches, there is the --target_directory flag that should be used to specify the path of the directory containing wav files that need to be padded. For example,
 
-```
+```sh
 python white_noise_padding.py --target_directory /path/to/wav/files
 ```
+
 All padded wav files will be outputted to the output folder.
 
 ### White Noise Padding
@@ -378,27 +386,27 @@ The white_noise_padding.py is designed to pad wav files to preferred length of 1
 
 In order to use the script, run the following command in terminal:
 
-```
+```sh
 python white_noise_padding.py \path\to\wav\file
-
 ```
+
 ## Selection of model:
 
-* **Video-Level Models**
-	- `LogisticModel`: Linear projection of the output features into the label space, followed by a sigmoid function to convert logit values to probabilities.
-	- `MoeModel`: A per-class softmax distribution over a configurable number of logistic classifiers. One of the classifiers in the mixture is not trained, and always predicts 0.
-* **Frame-Level Models**
-	- `LstmModel`: Processes the features for each frame using a multi-layered LSTM neural net. The final internal state of the LSTM is input to a video-level model for classification. Note that you will need to change the learning rate to 0.001 when using this model.
-	- `DbofModel`: Projects the features for each frame into a higher dimensional 'clustering' space, pools across frames in that space, and then uses a video-level model to classify the now aggregated features.
-	- `FrameLevelLogisticModel`: Equivalent to 'LogisticModel', but performs average-pooling on the fly over frame-level features rather than using pre-aggregated features.
+- **Video-Level Models**
+  - `LogisticModel`: Linear projection of the output features into the label space, followed by a sigmoid function to convert logit values to probabilities.
+  - `MoeModel`: A per-class softmax distribution over a configurable number of logistic classifiers. One of the classifiers in the mixture is not trained, and always predicts 0.
+- **Frame-Level Models**
+  - `LstmModel`: Processes the features for each frame using a multi-layered LSTM neural net. The final internal state of the LSTM is input to a video-level model for classification. Note that you will need to change the learning rate to 0.001 when using this model.
+  - `DbofModel`: Projects the features for each frame into a higher dimensional 'clustering' space, pools across frames in that space, and then uses a video-level model to classify the now aggregated features.
+  - `FrameLevelLogisticModel`: Equivalent to 'LogisticModel', but performs average-pooling on the fly over frame-level features rather than using pre-aggregated features.
 
-> From <https://github.com/google/youtube-8m#overview-of-models> 
+> From <https://github.com/google/youtube-8m#overview-of-models>
 
-## Audioset Ontology 
+## Audioset Ontology
 
 ```
 Firearm
-{	
+{
     "id": "/m/032s66",
     "name": "Gunshot, gunfire",
     "description": "The sound of the discharge of a firearm, or multiple such discharges.",
@@ -408,40 +416,45 @@ Firearm
     "restrictions": []
     },
 ```
-> From <https://github.com/audioset/ontology/blob/master/ontology.json> 
+
+> From <https://github.com/audioset/ontology/blob/master/ontology.json>
 
 ## Dataset Ingestion & Sample Models
 
 1. Download the Audioset in a tar file and unpack into a features directory.
-    - Download using `curl -O storage.googleapis.com/us_audioset/youtube_corpus/v1/features/features.tar.gz`
-    - Unpack using `tar -xzf features.tar.gz`
+   - Download using `curl -O storage.googleapis.com/us_audioset/youtube_corpus/v1/features/features.tar.gz`
+   - Unpack using `tar -xzf features.tar.gz`
 2. Clone the youtube8m repository - https://github.com/google/youtube-8m
-> **Hackweek Learnings**: Audioset using outdated version of the youtube 8m model templates and requires a changed in the readers.py file. Change all instances of `id` to `video_id`.
+   > **Hackweek Learnings**: Audioset using outdated version of the youtube 8m model templates and requires a changed in the readers.py file. Change all instances of `id` to `video_id`.
 
 ## Building a Model
 
 ### Train
 
 Now that you have the Youtube-8m model samples and the audioset features to train the model lets now train an frame-level model `LstmModel` on our audio embedding features. Run the command below where"
+
 - `--train_data_pattern` is the path to the balanced_train tensorflow records for the audioset embeddings
 - `--train_dir` is an arbitrary path to a directory where the model will be creates
 - `--base_learning_rate` is set to 0.001 since we are using an LSTM Model
-- `--num_epochs` is an arbitrary number for the amount of times the model will be trained on the dataset. Ideally we would like to have a 0.01 loss so train the model long enough so the loss value is relatively close to this. *try not to overfit the model*
+- `--num_epochs` is an arbitrary number for the amount of times the model will be trained on the dataset. Ideally we would like to have a 0.01 loss so train the model long enough so the loss value is relatively close to this. _try not to overfit the model_
 
 `python youtube-8m/train.py --frame_features --model=LstmModel --feature_names=audio_embedding --feature_sizes=128 --train_data_pattern=features/audioset_v1_embeddings/bal_train/*.tfrecord --train_dir model_new/dir --start_new_model --base_learning_rate=0.001 --num_epochs=1500`
+
 #### Tracking Training
-* You can use **Nohup** to write the console to a txt and monitor the loss
-    * Use `nohup python youtube-8m/train.py --frame_features --model=LstmModel --feature_names=audio_embedding --feature_sizes=128 --train_data_pattern=features/audioset_v1_embeddings/bal_train/*.tfrecord --train_dir model_new/dir --start_new_model --base_learning_rate=0.001 --num_epochs=1500 &`
-    * Then open another terminal and monitor the loss using `tail -f nohup.out`
-* You can also use **Tensorboard** to monitor the model loss and other metrics using a UI.
-    * In the portal add port `6006` as an inbound rule for your network security group that you VM is configured to.
-    * Use `tensorboard --logdir=model_new --host=0.0.0.0` from a new terminal in the VM and navigate to tensorboard by entering `<Public_Ip_Address_for_your_VM>:6006`
+
+- You can use **Nohup** to write the console to a txt and monitor the loss
+  - Use `nohup python youtube-8m/train.py --frame_features --model=LstmModel --feature_names=audio_embedding --feature_sizes=128 --train_data_pattern=features/audioset_v1_embeddings/bal_train/*.tfrecord --train_dir model_new/dir --start_new_model --base_learning_rate=0.001 --num_epochs=1500 &`
+  - Then open another terminal and monitor the loss using `tail -f nohup.out`
+- You can also use **Tensorboard** to monitor the model loss and other metrics using a UI.
+  - In the portal add port `6006` as an inbound rule for your network security group that you VM is configured to.
+  - Use `tensorboard --logdir=model_new --host=0.0.0.0` from a new terminal in the VM and navigate to tensorboard by entering `<Public_Ip_Address_for_your_VM>:6006`
 
 ### Evaluate
 
 We will now use the binaries for evaluating Tensorflow models on the YouTube-8M dataset with audioset embeddings. Run this command once or for an arbitrary time where:
-* `--train_data_pattern` is the path to the eval_train tensorflor wecords for the audtioset embeddings
-* `--train_dir` is the path to the previousl created directory for your model
+
+- `--train_data_pattern` is the path to the eval_train tensorflor wecords for the audtioset embeddings
+- `--train_dir` is the path to the previousl created directory for your model
 
 `python youtube-8m/eval.py --eval_data_pattern=features/audioset_v1_embeddings/eval/*.tfrecord --train_dir model_new/dir`
 
@@ -450,11 +463,13 @@ We will now use the binaries for evaluating Tensorflow models on the YouTube-8M 
 Now that we have a working model we will run 3 commands to evaluate how our model scores audio based on the audio embedding features.
 
 First we'll run an inference on our bal_train dataset. These are audio records that our model was built using. Run the command where:
+
 - `--top_k` is the top 3 labels tagged by the model
-- `--input_data_pattern` is a partition of some of the tfrecords for us to evaluate the model scores. In this example we use all tfrecords with a*
+- `--input_data_pattern` is a partition of some of the tfrecords for us to evaluate the model scores. In this example we use all tfrecords with a\*
 - `--output_file` is a user defined path to the output csv file the model generates with the scores.
 
 `python youtube-8m/inference.py --output_file Bal_SamplePredictions.csv --input_data_pattern=features/audioset_v1_embeddings/bal_train/a*.tfrecord --train_dir model_new/dir --top_k=3`
 
 With the output csv file use [Bal_Train_Segments.csv](http://storage.googleapis.com/us_audioset/youtube_corpus/v1/csv/balanced_train_segments.csv) to validate that the video files were correctly labeled. Repeat this inference step replacing the `input_data_pattern` with the Unbalance_Data and then with the output tfrecord that is create with a custom wav file.
+
 > The Balance_Train dataset scores should be very accurate since we used this data to train the LstmModel. The Unbalnced_Train dataset will be a bit less accurate and your custom audio tfrecord for a user wav file will vary based on a variety of variables that will need to be further explored.
