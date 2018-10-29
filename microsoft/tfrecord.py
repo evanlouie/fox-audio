@@ -1,9 +1,9 @@
 import argparse
+from typing import List
 import tensorflow as tf
-import os
 
 
-def read(record_path, is_sequence_example=True):
+def read(record_path: str, is_sequence_example: bool = True) -> List:
     # Tensorflow uses weird reflection on protobufs. The FromString method does exist; disable E1101 warning
     return [
         (
@@ -15,7 +15,7 @@ def read(record_path, is_sequence_example=True):
     ]
 
 
-def print_example(record_path, is_sequence_example=True):
+def print_example(record_path: str, is_sequence_example: bool = True) -> None:
     """Prints the contents of a TF Record file containing either a SequenceExample or Example."""
     examples = read(record_path, is_sequence_example)
     for example in examples:
@@ -32,4 +32,3 @@ if __name__ == "__main__":
         print_example(args.example, is_sequence_example=False)
     else:
         print_example(args.sequence_example)
-
