@@ -84,7 +84,8 @@ You will need to evaluate the model against the `eval` training set provided fro
 
 ```sh
 # Backup the original model directory*
-tar cvzf lstm.tar.gz output/lstm
+now=`date +%Y-%m-%d.%H:%M:%S`
+tar cvzf lstm-${now}.tar.gz output/lstm
 
 # Run eval
 python youtube-8m/eval.py \
