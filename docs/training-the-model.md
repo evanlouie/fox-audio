@@ -322,7 +322,8 @@ def main(_):
 if __name__ == '__main__':
     tf.app.run()
 ```
-There is also a variation of vggish_inference_demo.py (vggish_inference_demo_custom.py) that supports the capability of inputting a directory of subdirectories that contain multiple wav files, and converting them all to tensor flow records. For example:
+
+There is also a variation of vggish_inference_demo.py (`microsoft/vggish_inference.py`) that supports the capability of inputting a directory of subdirectories that contain multiple wav files, and converting them all to tensor flow records. For example:
 
 ```
 [target_dir]_
@@ -337,11 +338,14 @@ There is also a variation of vggish_inference_demo.py (vggish_inference_demo_cus
 ```
 To do this, the command line changes slightly:
 
-`python vggish_inference_demo_custom.py --target_directory /path/to/wav/files \
-                                    --tf_directory /path/to/tfrecords \
-                                    --checkpoint /path/to/model/checkpoint \
-                                    --pca_params /path/to/pca/params
-				    --labels_file /path/to/labels/csv/file \`
+```sh
+python microsoft/vggish_inference.py \
+    --target_directory /path/to/wav/files \
+    --tf_directory /path/to/tfrecords \
+    --checkpoint /path/to/model/checkpoint \
+    --pca_params /path/to/pca/params \
+    --labels_file /path/to/labels/csv/file 
+```
 
 The vggish_inference_demo.py is specifically used to label tensor flow records with the appropriate class label according to a label csv file. If you would like to convert wav files to generic tensorflow record files (without labels), use the vggish_inference_score.py or do not specify the optional --labels_file argument in vggish_inference_demo.py
  
@@ -349,10 +353,16 @@ When using the --target_directory argument, the --tf_directory argument needs to
 
 There is also the --ff flag, which stangs for 'flat file'. Use this argument in the case where you have a directory of files, as opposed to a directory of subdirectories, and require to parse class labels from the name of wav files themselves as opposed to using subdirectory names.
 
-Keep in mind that the vggish_inference_demo_custom.py is a multithreaded program and may consume significant system resources when running. In order to control the number of Python processes that are spawned to run the program, use the --proc argument followed by the number of processes.
+Keep in mind that the `microsoft/vggish_inference.py` is a multithreaded program and may consume significant system resources when running. In order to control the number of Python processes that are spawned to run the program, use the --proc argument followed by the number of processes.
 
-```
-python vggish_inference_demo_custom.py --tf_directory /Microsoft/fox-audio/tfrecord_output --checkpoint /Microsoft/fox-audio/vggish_model.ckpt --pca_params /Microsoft/fox-audio/vggish_pca_params.npz --labels_file /Microsoft/fox-audio/class_labels_indices.csv --subdirectory /Microsoft/fox-audio/wav/labels_testing/other --proc 10
+```sh
+python microsoft/vggish_inference.py \
+    --tf_directory /Microsoft/fox-audio/tfrecord_output \
+    --checkpoint /Microsoft/fox-audio/vggish_model.ckpt \
+    --pca_params /Microsoft/fox-audio/vggish_pca_params.npz \
+    --labels_file /Microsoft/fox-audio/class_labels_indices.csv \
+    --subdirectory /Microsoft/fox-audio/wav/labels_testing/other \
+    --proc 10
 ```
 
 ## White Noise Padding
@@ -361,13 +371,13 @@ The white_noise_padding.py is designed to pad wav files to a preferred length of
 
 In order to use the script, run the following command in terminal:
 
-```
+```sh
 python white_noise_padding.py /path/to/wav/file
 ```
 
 To run the white_noise_padding.py in batches, there is the --target_directory flag that should be used to specify the path of the directory containing wav files that need to be padded. For example,
 
-```
+```sh
 python white_noise_padding.py --target_directory /path/to/wav/files
 ```
 All padded wav files will be outputted to the output folder.
@@ -378,7 +388,7 @@ The white_noise_padding.py is designed to pad wav files to preferred length of 1
 
 In order to use the script, run the following command in terminal:
 
-```
+```sh
 python white_noise_padding.py \path\to\wav\file
 
 ```
