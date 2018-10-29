@@ -7,7 +7,7 @@ Any reasonably recent version of these packages should work. TensorFlow should b
 
 **Azure Data Science VM (Linux)**
 
-* Python - 3.5.5	N/A
+* Python - 3.5.5    N/A
 * Numpy - 1.14.5
 * Scipy - 1.1.0
 * Resampy - 0.2.1
@@ -126,23 +126,23 @@ $ python vggish_smoke_test.py
 Required Input  
 -  A WAV file (assumed to contain signed 16-bit PCM samples) 
     - This wav file is converted into log mel spectrogram examples, feed into VGGish, the raw embedding output is whitened and quantized, and the postprocessed embeddings are optionally written in a SequenceExample to a TFRecord file (using the same format as the embedding features released in AudioSet).
-	- Size of the file - The VGG inference script  "Converts audio waveform into an array of examples for VGGish."
-	    - Input: data: np.array of either one dimension (mono) or two dimensions(multi-channel, with the outer dimension representing channels). Each sample is generally expected to lie in the range [-1.0, +1.0], although this is not required.
+    - Size of the file - The VGG inference script  "Converts audio waveform into an array of examples for VGGish."
+        - Input: data: np.array of either one dimension (mono) or two dimensions(multi-channel, with the outer dimension representing channels). Each sample is generally expected to lie in the range [-1.0, +1.0], although this is not required.
 
-		- Output: 3-D np.array of shape [num_examples, num_frames, num_bands] which represents a sequence of examples, each of which contains a patch of log mel spectrogram, covering num_frames frames of audio and num_bands mel frequency bands, where the frame length is vggish_params.STFT_HOP_LENGTH_SECONDS.
+        - Output: 3-D np.array of shape [num_examples, num_frames, num_bands] which represents a sequence of examples, each of which contains a patch of log mel spectrogram, covering num_frames frames of audio and num_bands mel frequency bands, where the frame length is vggish_params.STFT_HOP_LENGTH_SECONDS.
 
 - Converting to .WAV 16-bit PCM Sample
-	- Audio Samples
-		- I am using 2 audio samples for gunshots provided by freesound.org
-			- Sample 1 - https://freesound.org/people/watupgroupie/sounds/36815/
-			- Sample 2 - https://freesound.org/people/fastson/sounds/399065/
-	- Converting WAV 16bit signed PCM
-		- [Online-Convert](https://www.online-convert.com)
-			- No changes in the sampling rate
-			- No Changes to the audio channel
-			- In advanced options select the following as your PCM format PCM 16bit signed Small Endian
-				- Sample 1 - https://rtwrt.blob.core.windows.net/post5-audioset/samples/sample1_16bit_PCM_signed_smallendian.wav
-				- Sample 2 - https://rtwrt.blob.core.windows.net/post5-audioset/samples/sample2_16bit_PCM_signed_smallendian.wav
+    - Audio Samples
+        - I am using 2 audio samples for gunshots provided by freesound.org
+            - Sample 1 - https://freesound.org/people/watupgroupie/sounds/36815/
+            - Sample 2 - https://freesound.org/people/fastson/sounds/399065/
+    - Converting WAV 16bit signed PCM
+        - [Online-Convert](https://www.online-convert.com)
+            - No changes in the sampling rate
+            - No Changes to the audio channel
+            - In advanced options select the following as your PCM format PCM 16bit signed Small Endian
+                - Sample 1 - https://rtwrt.blob.core.windows.net/post5-audioset/samples/sample1_16bit_PCM_signed_smallendian.wav
+                - Sample 2 - https://rtwrt.blob.core.windows.net/post5-audioset/samples/sample2_16bit_PCM_signed_smallendian.wav
 
 
 | Clip  | Converter        | Channel   | Sample Rate | Endian | PCM-16bit | Signed |
@@ -395,12 +395,12 @@ python white_noise_padding.py \path\to\wav\file
 ## Selection of model:
 
 * **Video-Level Models**
-	- `LogisticModel`: Linear projection of the output features into the label space, followed by a sigmoid function to convert logit values to probabilities.
-	- `MoeModel`: A per-class softmax distribution over a configurable number of logistic classifiers. One of the classifiers in the mixture is not trained, and always predicts 0.
+    - `LogisticModel`: Linear projection of the output features into the label space, followed by a sigmoid function to convert logit values to probabilities.
+    - `MoeModel`: A per-class softmax distribution over a configurable number of logistic classifiers. One of the classifiers in the mixture is not trained, and always predicts 0.
 * **Frame-Level Models**
-	- `LstmModel`: Processes the features for each frame using a multi-layered LSTM neural net. The final internal state of the LSTM is input to a video-level model for classification. Note that you will need to change the learning rate to 0.001 when using this model.
-	- `DbofModel`: Projects the features for each frame into a higher dimensional 'clustering' space, pools across frames in that space, and then uses a video-level model to classify the now aggregated features.
-	- `FrameLevelLogisticModel`: Equivalent to 'LogisticModel', but performs average-pooling on the fly over frame-level features rather than using pre-aggregated features.
+    - `LstmModel`: Processes the features for each frame using a multi-layered LSTM neural net. The final internal state of the LSTM is input to a video-level model for classification. Note that you will need to change the learning rate to 0.001 when using this model.
+    - `DbofModel`: Projects the features for each frame into a higher dimensional 'clustering' space, pools across frames in that space, and then uses a video-level model to classify the now aggregated features.
+    - `FrameLevelLogisticModel`: Equivalent to 'LogisticModel', but performs average-pooling on the fly over frame-level features rather than using pre-aggregated features.
 
 > From <https://github.com/google/youtube-8m#overview-of-models> 
 
@@ -408,7 +408,7 @@ python white_noise_padding.py \path\to\wav\file
 
 ```
 Firearm
-{	
+{    
     "id": "/m/032s66",
     "name": "Gunshot, gunfire",
     "description": "The sound of the discharge of a firearm, or multiple such discharges.",
