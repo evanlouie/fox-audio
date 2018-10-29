@@ -101,19 +101,19 @@ Wed Sep 26 21:17:23 2018
 #   $ deactivate
 # Within the virtual environment, do not use 'sudo'.
 # Upgrade pip first.
-$ sudo python -m pip install --upgrade pip
+sudo python -m pip install --upgrade pip
 # Install dependences. Resampy needs to be installed after NumPy and SciPy
 # are already installed.
-$ sudo pip install numpy scipy
-$ sudo pip install resampy tensorflow six
+sudo pip install numpy scipy
+sudo pip install resampy tensorflow six
 # Clone TensorFlow models repo into a 'models' directory.
-$ git clone https://github.com/tensorflow/models.git
-$ cd models/research/audioset
+git clone https://github.com/tensorflow/models.git
+cd models/research/audioset
 # Download data files into same directory as code.
-$ curl -O https://storage.googleapis.com/audioset/vggish_model.ckpt
-$ curl -O https://storage.googleapis.com/audioset/vggish_pca_params.npz
+curl -O https://storage.googleapis.com/audioset/vggish_model.ckpt
+curl -O https://storage.googleapis.com/audioset/vggish_pca_params.npz
 # Installation ready, let's test it.
-$ python vggish_smoke_test.py
+python vggish_smoke_test.py
 # If we see "Looks Good To Me", then we're all set.
 ```
 
@@ -145,10 +145,10 @@ Required Input
         - Sample 1 - https://rtwrt.blob.core.windows.net/post5-audioset/samples/sample1_16bit_PCM_signed_smallendian.wav
         - Sample 2 - https://rtwrt.blob.core.windows.net/post5-audioset/samples/sample2_16bit_PCM_signed_smallendian.wav
 
-| Clip  |    Converter     |   Channel | Sample Rate | Endian | PCM-16bit | Signed |
+| Clip  | Converter        | Channel   | Sample Rate | Endian | PCM-16bit | Signed |
 | ----- | :--------------: | --------: | ----------: | ------ | --------- | ------ |
-| Clip  | Online-Converter | No-Change |   No-Change | Small  | Yes       | Yes    |
-| Clip2 | Online-Converter | No-Change |   No-Change | Small  | Yes       | Yes    |
+| Clip  | Online-Converter | No-Change | No-Change   | Small  | Yes       | Yes    |
+| Clip2 | Online-Converter | No-Change | No-Change   | Small  | Yes       | Yes    |
 
 > Upload to a blob & Curl your files -
 > `$ curl -O https://rtwrt.blob.core.windows.net/post5-audioset/samples/sample1_16bit_PCM_signed_smallendian.wav
