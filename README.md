@@ -33,6 +33,9 @@ Assuming `python` currently points to a `3.6.6` installation:
 pip install --upgrade pip
 pip install --upgrade virtualenv
 virtualenv .env
+
+# Activate/inject virtualenv. To disable run `deactivate`
+source .env/bin/activate
 ```
 
 If you are on a machine with a GPU available, add the `tensorflow-gpu` package to utilize it.
