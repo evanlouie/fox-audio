@@ -456,7 +456,7 @@ We will now use the binaries for evaluating Tensorflow models on the YouTube-8M 
 - `--train_data_pattern` is the path to the eval_train tensorflor wecords for the audtioset embeddings
 - `--train_dir` is the path to the previousl created directory for your model
 
-`python youtube-8m/eval.py --eval_data_pattern=features/audioset_v1_embeddings/eval/*.tfrecord --train_dir model_new/dir`
+`python youtube-8m/eval.py --eval_data_pattern=features/audioset_v1_embeddings/eval/*.tfrecord --train_dir model_new/dir --run_once`
 
 ### Inference
 
