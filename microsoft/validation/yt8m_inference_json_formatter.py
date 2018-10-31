@@ -39,53 +39,55 @@ FLAGS = flags.FLAGS
 
 
 def main(_):
-    # check to see if flags have been set, otherwise throw ValueError
+    # Check to see if flags have been set, otherwise throw ValueError
     if FLAGS.csv_files:
-            if FLAGS.json_files:
-                #for csvfile in glob.glob('InferencedModels/*json'):
-                csv_files = FLAGS.csv_files
-                json_files= FLAGS.json_files
-                for filename in os.listdir(csv_files):
-                    if filename.endswith(".csv"):
-                        print("INPUT FILENAME: " + filename)
-                        file_location = str(csv_files + "/" + filename)
-                        df = pd.read_csv(filename)
-                        audiosetData = []
+        if FLAGS.json_files:
+            # Iterate through each csv file in the directory
+            csv_files = FLAGS.csv_files
+            json_files= FLAGS.json_files
+            for filename in os.listdir(csv_files):
+                if filename.endswith(".csv"):
+                    print("INPUT FILENAME: " + filename)
+                    file_location = str(csv_files + "/" + filename)
+                    df = pd.read_csv(filename)
+                    audiosetData = []
+                    # Iterate through each file label data
+                    for index, row in df.iterrows():
+                        # Validate Audiset CSV Inferences
                         data = {}
-                        for index, row in df.iterrows():
-                            #Specific to Audiset CSV Inferences
-                            rowStr = row['LabelConfidencePairs']
-                            rowLabels = rowStr.split()
-                            data['VideoId'] = row['VideoId']
-                            data['Label_Data'] = {}
-                            for newVal in range(0, int(len(rowLabels))): 
-                                    #Check to see if the value is a confidence or a Label index
-                                    if newVal % 2 == 0:
-                                        if(newVal <=1):
-                                            x=0
-                                        else:
-                                            x = newVal/2
-                                    insertLabel = str("label_"+str(int(x)))
-                                    insertLabelConfidence = "label_"+str(int(x))+"ConfidenceRate"
-                                    #Add value to Label_Data array
-                                    if newVal % 2 == 0:
-                                        data['Label_Data'].update({insertLabel:rowLabels[newVal]})
-                                    else:
-                                        data['Label_Data'].update({insertLabelConfidence:rowLabels[newVal]})
-
-                            audiosetData.append(data)
-                        parsed_filename = filename.rsplit(".", 1)[0]
-                        output_location = str(json_files + "/" + parsed_filename + ".json")
-                        print("OUTPUT FILENAME: "+output_location)
-                        #Write to json file directory
-                        with open(output_location, 'w') as jsonOut:
-                            json.dump(audiosetData, jsonOut)
-                    else:
-                        continue
-            else:
-                raise ValueError(
-                    "No directory for json files specified. Please set the --json_files to a path for converted JSON files to be outputted to."
-                )
+                        rowStr = row['LabelConfidencePairs']
+                        rowLabels = rowStr.split()
+                        data['VideoId'] = row['VideoId']
+                        data['Label_Data'] = {}
+                        # Iterate through each LabelConfidentPair value seperated by space and convert to json record
+                        for newVal in range(0, int(len(rowLabels))): 
+                            # Check to see if the string in the current row is a confidence or a Label index
+                            if newVal % 2 == 0:
+                                if(newVal <=1):
+                                    x=0
+                                else:
+                                    x = newVal/2
+                            insertLabel = str("label_"+str(int(x)))
+                            insertLabelConfidence = "label_"+str(int(x))+"ConfidenceRate"
+                            # Add value to Label_Data list
+                            if newVal % 2 == 0:
+                                data['Label_Data'].update({insertLabel:rowLabels[newVal]})
+                            else:
+                                data['Label_Data'].update({insertLabelConfidence:rowLabels[newVal]})
+                        audiosetData.append(data) 
+                    print(audiosetData)
+                    parsed_filename = filename.rsplit(".", 1)[0]
+                    output_location = str(json_files + "/" + parsed_filename + ".json")
+                    print("OUTPUT FILENAME: "+output_location)
+                    # Write to json file in output directory
+                    with open(output_location, 'w') as jsonOut:
+                        json.dump(audiosetData, jsonOut)
+                else:
+                    continue
+        else:
+            raise ValueError(
+                "No directory for json files specified. Please set the --json_files to a path for converted JSON files to be outputted to."
+            )
     else:
         raise ValueError(
                     "No directory for csv files specified. Please set the --csv_files to a path for YT8M inference scores."
