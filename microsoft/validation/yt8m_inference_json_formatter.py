@@ -48,7 +48,6 @@ def main(_):
             for filename in os.listdir(csv_files):
                 if filename.endswith(".csv"):
                     print("INPUT FILENAME: " + filename)
-                    file_location = str(csv_files + "/" + filename)
                     df = pd.read_csv(filename)
                     audiosetData = []
                     # Iterate through each file label data
@@ -68,7 +67,7 @@ def main(_):
                                 else:
                                     x = newVal/2
                             insertLabel = str("label_"+str(int(x)))
-                            insertLabelConfidence = "label_"+str(int(x))+"ConfidenceRate"
+                            insertLabelConfidence = "labelConf"+str(int(x))
                             # Add value to Label_Data list
                             if newVal % 2 == 0:
                                 data['Label_Data'].update({insertLabel:rowLabels[newVal]})
