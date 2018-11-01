@@ -67,7 +67,7 @@ def main(_):
                                 else:
                                     x = newVal/2
                             insertLabel = str("label_"+str(int(x)))
-                            insertLabelConfidence = "labelConf"+str(int(x))
+                            insertLabelConfidence = "labelConf_"+str(int(x))
                             # Add value to Label_Data list
                             if newVal % 2 == 0:
                                 data['Label_Data'].update({insertLabel:rowLabels[newVal]})
