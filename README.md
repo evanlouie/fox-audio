@@ -49,6 +49,8 @@ pip install --upgrade tensorflow-gpu
 Install project dependencies and download required `vggish` files
 
 ```bash
+# Downgrade to setuptools==39.1.0 (Tensorflow requirement)
+pip install setuptools==39.1.0
 pip install -r requirements.txt
 curl -O https://storage.googleapis.com/audioset/vggish_model.ckpt
 curl -O https://storage.googleapis.com/audioset/vggish_pca_params.npz
