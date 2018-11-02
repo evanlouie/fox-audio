@@ -19,78 +19,78 @@ Usage:
 from __future__ import print_function
 
 import os
-import csv
-import glob
 import json
+import argparse
 import pandas as pd
-import tensorflow as tf
 from collections import deque
 
-flags = tf.app.flags
-
-flags.DEFINE_string(
-    "csv_files", None, "Path to directory of YT8m csv inference file scores."
-)
-
-flags.DEFINE_string(
-    "json_files", None, "Path to target directory for output json files.")
-
-FLAGS = flags.FLAGS
 
 
 def main(_):
     # Check to see if flags have been set, otherwise throw ValueError
-    if FLAGS.csv_files:
-        if FLAGS.json_files:
-            # Iterate through each csv file in the directory
-            csv_files = FLAGS.csv_files
-            json_files= FLAGS.json_files
-            for filename in os.listdir(csv_files):
-                if filename.endswith(".csv"):
-                    print("INPUT FILENAME: " + filename)
-                    df = pd.read_csv(filename)
-                    audiosetData = []
-                    # Iterate through each file label data
-                    for index, row in df.iterrows():
-                        # Validate Audiset CSV Inferences
-                        data = {}
-                        rowStr = row['LabelConfidencePairs']
-                        rowLabels = rowStr.split()
-                        data['VideoId'] = row['VideoId']
-                        data['Label_Data'] = {}
-                        # Iterate through each LabelConfidentPair value seperated by space and convert to json record
-                        for newVal in range(0, int(len(rowLabels))): 
-                            # Check to see if the string in the current row is a confidence or a Label index
-                            if newVal % 2 == 0:
-                                if(newVal <=1):
-                                    x=0
-                                else:
-                                    x = newVal/2
-                            insertLabel = str("label_"+str(int(x)))
-                            insertLabelConfidence = "labelConf_"+str(int(x))
-                            # Add value to Label_Data list
-                            if newVal % 2 == 0:
-                                data['Label_Data'].update({insertLabel:rowLabels[newVal]})
-                            else:
-                                data['Label_Data'].update({insertLabelConfidence:rowLabels[newVal]})
-                        audiosetData.append(data) 
-                    print(audiosetData)
-                    parsed_filename = filename.rsplit(".", 1)[0]
-                    output_location = str(json_files + "/" + parsed_filename + ".json")
-                    print("OUTPUT FILENAME: "+output_location)
-                    # Write to json file in output directory
-                    with open(output_location, 'w') as jsonOut:
-                        json.dump(audiosetData, jsonOut)
-                else:
-                    continue
-        else:
-            raise ValueError(
-                "No directory for json files specified. Please set the --json_files to a path for converted JSON files to be outputted to."
-            )
+    if args.csv_dir:
+        # make directory for json files if directory not set
+        if not os.path.exists(json_dir):
+            os.makedirs(json_dir)
+        # Iterate through each csv file in the directory
+        csv_files = args.csv_dir
+        json_files= json_dir
+        for filename in os.listdir(csv_files):
+            if filename.endswith(".csv"):
+                print("INPUT FILENAME: " + filename)
+                df = pd.read_csv(filename)
+                audiosetData = []
+                # Iterate through each file label data
+                for index, row in df.iterrows():
+                    # Validate Audiset CSV Inferences
+                    data = {}
+                    rowStr = row['LabelConfidencePairs']
+                    rowLabels = rowStr.split()
+                    data['VideoId'] = row['VideoId']
+                    data['Label_Data'] = {}
+                    # Iterate through each LabelConfidentPair value seperated by space and convert to json record
+                    for newVal in range(0, int(len(rowLabels))):
+                        is_even=newVal % 2 == 0 
+                        # Check to see if the string in the current row is a confidence or a Label index
+                        if (is_even):
+                            x=0 if newVal <= 1 else newVal/2
+                        insertLabel = str("label_"+str(int(x)))
+                        insertLabelConfidence = "labelConf_"+str(int(x))
+                        # Add value to Label_Data list
+                        if (is_even):
+                            data['Label_Data'].update({insertLabel:rowLabels[newVal]})
+                        else:
+                            data['Label_Data'].update({insertLabelConfidence:rowLabels[newVal]})
+                    audiosetData.append(data) 
+                #print(audiosetData)
+                parsed_filename = filename.rsplit(".", 1)[0]
+                output_location = str(json_files + "/" + parsed_filename + ".json")
+                print("OUTPUT FILENAME: "+output_location)
+                # Write to json file in output directory
+                with open(output_location, 'w') as jsonOut:
+                    json.dump(audiosetData, jsonOut)
+            else:
+                continue
+        
     else:
         raise ValueError(
                     "No directory for csv files specified. Please set the --csv_files to a path for YT8M inference scores."
                 )
 
 if __name__ == "__main__":
-    tf.app.run()
+    def parse_args():
+        """Parse out the required arguments to run as script"""
+        parser = argparse.ArgumentParser(description="Convert Audioset csv inference scores to a normalized json")
+        parser.add_argument("--csv_dir", help="Target directory of Audioset Inference CSV files")
+        parser.add_argument(
+            "--json_dir",
+            help="Output path for formatted json files. Will be created if does not exist (default: outputJson)",
+            default="outputJson",
+        )
+        return parser.parse_args()
+
+    # Parse user input
+    args = parse_args()
+    csv_dir = args.csv_dir
+    json_dir = args.json_dir
+    main(args)
