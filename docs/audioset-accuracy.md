@@ -1,18 +1,21 @@
-# Audio Model Accuracy: FAQ
+# RNNs & Audioset's VGGish Inference Model
 
-- [What is the Eval.py script doing?](#What-is-the-Eval.py-script-doing)
-- [What is Loss?](#what-is-loss?)
+- [About VGGish Model](#What-is-the-Eval.py-script-doing)
+- [LSTM Models and RNN Sequential Bounding Foundation](#what-is-loss?)
 - [Which Youtube-8m Model do I choose?](#Which-Youtube-8m-Model-do-I-choose?)
     - [LSTM Model](##LSTM-Model)
     - [DBOF Model](##DBof-Model)
     - [Frame Level Logistic Model](##Frame-Level-Logistic-Model)
+- [How should I format my audio for building and sound effect classifier that uses Audioset?]()
 
 - [Audioset Model Comparison](#audioset-model-comparison)
 
 
-## What is the Eval.py script doing
+## About the VGGish Model
 
-What is Eval.py? = This is the binary for evaluating Tensorflow models on the YouTube-8M dataset.
+The initial AudioSet release included 128-dimensional embeddings of each AudioSet segment produced from a VGG-like audio classification model that was trained on a large YouTube dataset (a preliminary version of what later became YouTube-8M).
+
+They provide a TensorFlow definition of this model, which is called VGGish, as well as supporting code to extract input features for the model from audio waveforms and to post-process the model embedding output into the same format as the released embedding features.
 
 * For example, when running the Eval.py console out gives us:
 
@@ -24,6 +27,8 @@ What is Eval.py? = This is the binary for evaluating Tensorflow models on the Yo
 
 
 - How many **EPOCHs** - An epoch is one forward pass and one backward pass of all the training examples. the epochs you define during initializiation of training your model will be stored in your checkpoint. For LSTMs
+
+> **Note**: Eval.py binary runs "forever" (i.e. keeps watching for updated model checkpoint and re-runs evals). To run once, pass flag `--run_once`
 
 ## What is Loss?
 
@@ -81,7 +86,7 @@ model in the 'predictions' key. The dimensions of the tensor are
 ```
 > Resources: https://github.com/google/youtube-8m/blob/2c94ed449737c886175a5fff1bfba7eadc4de5ac/frame_level_models.py 
 
-###DBof Model
+### DBof Model
 
 **DbofModel** or Deep Bag of Frame Model is the "bag-of-frames" approach (BOF), which encodes audio signals as the long-term statistical distribution of short-term spectral features, is commonly regarded as an effective and sufficient way to represent environmental sound recordings (soundscapes) since its introduction in an influential 2007 article. The present paper describes a concep-tual replication of this seminal article using several new soundscape datasets, with results strongly questioning the adequacy of the BOF approach for the task. We show that the good accuracy originally re-ported with BOF likely result from a particularly thankful dataset with low within-class variability, and that for more realistic datasets, BOF in fact does not perform significantly better than a mere one-point av-erage of the signal's features. Soundscape modeling, therefore, may not be the closed case it was once thought to be. Progress, we ar-gue, could lie in reconsidering the problem of considering individual acoustical events within each soundscape.
 
@@ -132,6 +137,15 @@ model in the 'predictions' key. The dimensions of the tensor are
 > Resources: https://arxiv.org/pdf/1706.08217.pdf 
 https://groups.google.com/forum/#!topic/youtube8m-users/0VWJPPXdjCU 
 
+## How should I format my audio for building a sound effect classifier that uses Audioset?
+
+Both Video-Level models and Frame-Level models use a similar format when leveraging Audioset to train a model. Video-Level models is a utility of Frame-Level models that does an aggregated projection of the output features with a logarithmic function that calculates the probabilities.
+
+As mentioned previously, the models provided by Youtube-m8 are RNNs.RNNs can use their internal state (memory) to process sequences of inputs. The RNN treats the vector of VGGish audio embeddings as a vector sequence for the model. For example, if the input sequence for an audio wave corresponding to a particular sound, the final target output at the end of the sequence may be a label classifying the sound. The network needs to understand memory and the progression of sound.
+
+The Audioset dataset is manually annotated audio events that was collected from human labelers to probe the presences of specific audio classes in 10 second segments of YouTube videos. For formatting, the Audioset VGGish model operates on 0.96s log Mel spectogram patches extracted from 16kHz audio, and outputs a 128-dimensional embedding vector to be inputted into your RNN Model. Commonly, white noise is used as an audio augmenter to increase the size of an audio dataset. This is unnecessary as the random signal frequencies would skew the end vector value label results an RNN would need to use for classification. 
+
 ## Audioset Model Comparison
 
 For more on Audioset Model Comparison view the validation documentation.
+

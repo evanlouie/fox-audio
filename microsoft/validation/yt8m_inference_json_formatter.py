@@ -81,7 +81,10 @@ if __name__ == "__main__":
     def parse_args():
         """Parse out the required arguments to run as script"""
         parser = argparse.ArgumentParser(description="Convert Audioset csv inference scores to a normalized json")
-        parser.add_argument("--csv_dir", help="Target directory of Audioset Inference CSV files")
+        parser.add_argument("csv_dir", 
+            help="Target directory of Audioset Inference CSV files. Will default to inputCSV if none is passed.",
+            default=inputCsv
+        )
         parser.add_argument(
             "--json_dir",
             help="Output path for formatted json files. Will be created if does not exist (default: outputJson)",
