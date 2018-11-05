@@ -93,7 +93,7 @@ now=`date +%Y-%m-%d.%H:%M:%S`
 tar cvzf lstm-${now}.tar.gz output/lstm
 
 # Run eval
-python youtube-8m/eval.py \
+python youtube_8m/eval.py \
   --eval_data_pattern=audioset_v1_embeddings/eval/*.tfrecord \
   --train_dir=output/lstm \
   --run_once
@@ -120,7 +120,7 @@ python microsoft/vggish_inference.py \
   --subdirectory=movie_wav_files
 
 # Run inference against our now vggish converted movie wav files
-python youtube-8m/inference.py \
+python youtube_8m/inference.py \
   --output_file=predictions.csv \
   --input_data_pattern=output/data_prep/movie_as_vggish/*.tfrecord \
   --train_dir=output/lstm
