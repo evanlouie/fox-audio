@@ -1,0 +1,8 @@
+language: python
+python:
+  - "3.6"
+
+script:
+  - python -m unittest discover microsoft
+  - python -m unittest discover audioset
+  - python -m unittest discover youtube_8m
