@@ -109,7 +109,7 @@ the `*.wav` files are in a directory called `movie_wav_files`
 
 ```sh
 # Ensure output directory for movie TFRecord files exists
-mkdir -p output/data_prep/vggish
+mkdir -p output/data_prep/movie_as_vggish
 
 # Convert our movie *.wav files to vggish sequence examples
 python microsoft/vggish_inference.py \
