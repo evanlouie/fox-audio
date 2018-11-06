@@ -72,7 +72,7 @@ mkdir -p output/lstm
 
 # Wait till the model training reaches an acceptable loss level. Typically you want to train till 0.01.
 # Once an acceptable loss level is reached, use <ctrl-c> to exit the script.
-python youtube_8m/train.py \
+python youtube_8m/retrain.py \
   --frame_features \
   --model=LstmModel \
   --feature_names=audio_embedding \
@@ -93,7 +93,7 @@ now=`date +%Y-%m-%d.%H:%M:%S`
 tar cvzf lstm-${now}.tar.gz output/lstm
 
 # Run eval
-python youtube-8m/eval.py \
+python youtube_8m/eval.py \
   --eval_data_pattern=audioset_v1_embeddings/eval/*.tfrecord \
   --train_dir=output/lstm \
   --run_once
@@ -109,7 +109,7 @@ the `*.wav` files are in a directory called `movie_wav_files`
 
 ```sh
 # Ensure output directory for movie TFRecord files exists
-mkdir -p output/data_prep/vggish
+mkdir -p output/data_prep/movie_as_vggish
 
 # Convert our movie *.wav files to vggish sequence examples
 python microsoft/vggish_inference.py \
@@ -120,11 +120,11 @@ python microsoft/vggish_inference.py \
   --subdirectory=movie_wav_files
 
 # Run inference against our now vggish converted movie wav files
-python youtube-8m/inference.py \
+python youtube_8m/inference.py \
   --output_file=predictions.csv \
   --input_data_pattern=output/data_prep/movie_as_vggish/*.tfrecord \
   --train_dir=output/lstm
 
-# Print the results (only showing gunshots; which are associated to label 427)
-cat predictions.csv | grep 427
+# Print the results (only showing explosion predictions; which are associated to labels 426-431)
+cat predictions.csv | grep -P '(\,|\s)?(426|427|428|429|430|431)\s'
 ```
