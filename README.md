@@ -72,7 +72,7 @@ mkdir -p output/lstm
 
 # Wait till the model training reaches an acceptable loss level. Typically you want to train till 0.01.
 # Once an acceptable loss level is reached, use <ctrl-c> to exit the script.
-python youtube_8m/train.py \
+python youtube_8m/retrain.py \
   --frame_features \
   --model=LstmModel \
   --feature_names=audio_embedding \
