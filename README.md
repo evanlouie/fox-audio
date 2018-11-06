@@ -125,6 +125,6 @@ python youtube_8m/inference.py \
   --input_data_pattern=output/data_prep/movie_as_vggish/*.tfrecord \
   --train_dir=output/lstm
 
-# Print the results (only showing gunshots; which are associated to label 427)
-cat predictions.csv | grep 427
+# Print the results (only showing explosion predictions; which are associated to labels 426-431)
+cat predictions.csv | grep -P '(\,|\s)?(426|427|428|429|430|431)\s'
 ```
