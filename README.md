@@ -112,7 +112,7 @@ the `*.wav` files are in a directory called `movie_wav_files`
 mkdir -p output/data_prep/movie_as_vggish
 
 # Convert our movie *.wav files to vggish sequence examples
-python microsoft/vggish_inference.py \
+python audioset/vggish_inference.py \
   --tf_directory=output/data_prep/movie_as_vggish \
   --checkpoint=vggish_model.ckpt \
   --pca_params=vggish_pca_params.npz \
