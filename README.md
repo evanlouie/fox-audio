@@ -33,6 +33,9 @@ Assuming `python` currently points to a `3.6.6` installation:
 pip install --upgrade pip
 pip install --upgrade virtualenv
 virtualenv .env
+
+# Activate/inject virtualenv. To disable run `deactivate`
+source .env/bin/activate
 ```
 
 If you are on a machine with a GPU available, add the `tensorflow-gpu` package to utilize it.
@@ -46,6 +49,8 @@ pip install --upgrade tensorflow-gpu
 Install project dependencies and download required `vggish` files
 
 ```bash
+# Downgrade to setuptools==39.1.0 (Tensorflow requirement)
+pip install setuptools==39.1.0
 pip install -r requirements.txt
 curl -O https://storage.googleapis.com/audioset/vggish_model.ckpt
 curl -O https://storage.googleapis.com/audioset/vggish_pca_params.npz
@@ -67,7 +72,7 @@ mkdir -p output/lstm
 
 # Wait till the model training reaches an acceptable loss level. Typically you want to train till 0.01.
 # Once an acceptable loss level is reached, use <ctrl-c> to exit the script.
-python youtube_8m/train.py \
+python youtube_8m/retrain.py \
   --frame_features \
   --model=LstmModel \
   --feature_names=audio_embedding \
@@ -88,7 +93,7 @@ now=`date +%Y-%m-%d.%H:%M:%S`
 tar cvzf lstm-${now}.tar.gz output/lstm
 
 # Run eval
-python youtube-8m/eval.py \
+python youtube_8m/eval.py \
   --eval_data_pattern=audioset_v1_embeddings/eval/*.tfrecord \
   --train_dir=output/lstm \
   --run_once
@@ -104,7 +109,7 @@ the `*.wav` files are in a directory called `movie_wav_files`
 
 ```sh
 # Ensure output directory for movie TFRecord files exists
-mkdir -p output/data_prep/vggish
+mkdir -p output/data_prep/movie_as_vggish
 
 # Convert our movie *.wav files to vggish sequence examples
 python microsoft/vggish_inference.py \
@@ -115,13 +120,13 @@ python microsoft/vggish_inference.py \
   --subdirectory=movie_wav_files
 
 # Run inference against our now vggish converted movie wav files
-python youtube-8m/inference.py \
+python youtube_8m/inference.py \
   --output_file=predictions.csv \
   --input_data_pattern=output/data_prep/movie_as_vggish/*.tfrecord \
   --train_dir=output/lstm
 
-# Print the results (only showing gunshots; which are associated to label 427)
-cat predictions.csv | grep 427
+# Print the results (only showing explosion predictions; which are associated to labels 426-431)
+cat predictions.csv | grep -P '(\,|\s)?(426|427|428|429|430|431)\s'
 ```
 
 ### Transfer Learning
