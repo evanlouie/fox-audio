@@ -128,3 +128,37 @@ python youtube_8m/inference.py \
 # Print the results (only showing explosion predictions; which are associated to labels 426-431)
 cat predictions.csv | grep -P '(\,|\s)?(426|427|428|429|430|431)\s'
 ```
+
+### Transfer Learning
+
+To perform transfer learning, you will need to acquire checkpoint files from a previously trained LSTM model. The following files are required from a pre-trained model:
+
+`checkpoint`
+`model.ckpt-0.data-00000-of-00001`
+`model.ckpt-0.index`
+`model.ckpt-0.meta`
+
+and optionally, later checkpoint files:
+
+`model.ckpt-310.data-00000-of-00001`
+`model.ckpt-310.index`
+`model.ckpt-310.meta`
+
+To execute the transfer.py, run the following command:
+
+```
+python microsoft\transfer.py \
+  --frane_features \
+  --model=LstmModel \
+  --feature_names=audtio_embedding \
+  --feature_sizes=128 \
+  --train_data_pattern=output/data_prep/movie_as_vggish/*.tfrecord \
+  --train_dir=output/new_lstm \
+  --base_learning_rate=0.001 \
+  --export_model_steps=100 \
+  --base_checkpoint=lstm/dir/model.ckpt-310 \
+  --start_new_model
+
+```
+
+You can then proceed with evaluating and predicting the results as described above.
