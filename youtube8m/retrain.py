@@ -1,28 +1,13 @@
-# Copyright 2016 Google Inc. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS-IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# Authors:
+# - Edaena Salinas Jasso <edaena.salinas@microsoft.com>
+# - Evan Louie <evan.louie@microsoft.com>
 """Binary for training Tensorflow models on the YouTube-8M dataset."""
 
 import json
 import os
 import time
-
-import eval_util
-import export_model
-import losses
-import frame_level_models
-import video_level_models
-import readers
+import utils
+import eval_util, export_model, losses, frame_level_models, video_level_models, readers
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 from tensorflow.python.lib.io import file_io
@@ -31,7 +16,6 @@ from tensorflow import flags
 from tensorflow import gfile
 from tensorflow import logging
 from tensorflow.python.client import device_lib
-import utils
 
 FLAGS = flags.FLAGS
 
@@ -588,7 +572,7 @@ class Trainer(object):
 
         logging.info("%s: Exited training loop.", task_as_string(self.task))
         sv.Stop()
- 
+
     def restore_last_checkpoint(self):
         index_files = file_io.get_matching_files(
             os.path.join(FLAGS.train_dir, "model.ckpt-*.meta")
@@ -610,7 +594,9 @@ class Trainer(object):
         saved_model_dir = os.path.abspath(self.train_dir)
         latest_meta_file = latest_index_file.split("/")[-1]
         previous_checkpoint = latest_meta_file[:-5]
-        tf.train.update_checkpoint_state(saved_model_dir, previous_checkpoint, [previous_checkpoint])
+        tf.train.update_checkpoint_state(
+            saved_model_dir, previous_checkpoint, [previous_checkpoint]
+        )
 
     def export_model(self, global_step_val, saver, save_path, session):
 

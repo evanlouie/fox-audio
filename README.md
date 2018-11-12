@@ -5,7 +5,7 @@ AudioSet data set and the YouTube8m starter code.
 
 ## Packages
 
-This repository contains 3 top level packages: `audioset`, `youtube_8m`, and `microsoft`.
+This repository contains 3 top level packages: `audioset`, `youtube8m`, and `microsoft`.
 
 ### AudioSet
 
@@ -14,7 +14,7 @@ on.
 
 ### YouTube8m
 
-The `youtube_8m` package contains the code pertaining to the actual model which will be generated
+The `youtube8m` package contains the code pertaining to the actual model which will be generated
 on the AudioSet data set.
 
 ### Microsoft
@@ -72,7 +72,7 @@ mkdir -p output/lstm
 
 # Wait till the model training reaches an acceptable loss level. Typically you want to train till 0.01.
 # Once an acceptable loss level is reached, use <ctrl-c> to exit the script.
-python youtube_8m/retrain.py \
+python youtube8m/retrain.py \
   --frame_features \
   --model=LstmModel \
   --feature_names=audio_embedding \
@@ -93,7 +93,7 @@ now=`date +%Y-%m-%d.%H:%M:%S`
 tar cvzf lstm-${now}.tar.gz output/lstm
 
 # Run eval
-python youtube_8m/eval.py \
+python youtube8m/eval.py \
   --eval_data_pattern=audioset_v1_embeddings/eval/*.tfrecord \
   --train_dir=output/lstm \
   --run_once
@@ -112,7 +112,7 @@ the `*.wav` files are in a directory called `movie_wav_files`
 mkdir -p output/data_prep/movie_as_vggish
 
 # Convert our movie *.wav files to vggish sequence examples
-python microsoft/vggish_inference.py \
+python audioset/vggish_inference.py \
   --tf_directory=output/data_prep/movie_as_vggish \
   --checkpoint=vggish_model.ckpt \
   --pca_params=vggish_pca_params.npz \
@@ -120,7 +120,7 @@ python microsoft/vggish_inference.py \
   --subdirectory=movie_wav_files
 
 # Run inference against our now vggish converted movie wav files
-python youtube_8m/inference.py \
+python youtube8m/inference.py \
   --output_file=predictions.csv \
   --input_data_pattern=output/data_prep/movie_as_vggish/*.tfrecord \
   --train_dir=output/lstm
@@ -147,10 +147,10 @@ and optionally, later checkpoint files:
 To execute the transfer.py, run the following command:
 
 ```
-python microsoft\transfer.py \
-  --frane_features \
+python youtube8m/transfer.py \
+  --frame_features \
   --model=LstmModel \
-  --feature_names=audtio_embedding \
+  --feature_names=audio_embedding \
   --feature_sizes=128 \
   --train_data_pattern=output/data_prep/movie_as_vggish/*.tfrecord \
   --train_dir=output/new_lstm \

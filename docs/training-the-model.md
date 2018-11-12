@@ -145,13 +145,13 @@ Required Input
         - Sample 1 - https://rtwrt.blob.core.windows.net/post5-audioset/samples/sample1_16bit_PCM_signed_smallendian.wav
         - Sample 2 - https://rtwrt.blob.core.windows.net/post5-audioset/samples/sample2_16bit_PCM_signed_smallendian.wav
 
-| Clip  | Converter        | Channel   | Sample Rate | Endian | PCM-16bit | Signed |
+| Clip  |    Converter     |   Channel | Sample Rate | Endian | PCM-16bit | Signed |
 | ----- | :--------------: | --------: | ----------: | ------ | --------- | ------ |
-| Clip  | Online-Converter | No-Change | No-Change   | Small  | Yes       | Yes    |
-| Clip2 | Online-Converter | No-Change | No-Change   | Small  | Yes       | Yes    |
+| Clip  | Online-Converter | No-Change |   No-Change | Small  | Yes       | Yes    |
+| Clip2 | Online-Converter | No-Change |   No-Change | Small  | Yes       | Yes    |
 
 > Upload to a blob & Curl your files -
-> `$ curl -O https://rtwrt.blob.core.windows.net/post5-audioset/samples/sample1_16bit_PCM_signed_smallendian.wav
+> `\$ curl -O https://rtwrt.blob.core.windows.net/post5-audioset/samples/sample1_16bit_PCM_signed_smallendian.wav
 
 ## VGG Conversion Tester
 
@@ -320,7 +320,7 @@ if __name__ == '__main__':
     tf.app.run()
 ```
 
-There is also a variation of vggish_inference_demo.py (`microsoft/vggish_inference.py`) that supports the capability of inputting a directory of subdirectories that contain multiple wav files, and converting them all to tensor flow records. For example:
+There is also a variation of vggish_inference_demo.py (`audioset/vggish_inference.py`) that supports the capability of inputting a directory of subdirectories that contain multiple wav files, and converting them all to tensor flow records. For example:
 
 ```
 [target_dir]_
@@ -336,7 +336,7 @@ There is also a variation of vggish_inference_demo.py (`microsoft/vggish_inferen
 To do this, the command line changes slightly:
 
 ```sh
-python microsoft/vggish_inference.py \
+python audioset/vggish_inference.py \
     --target_directory /path/to/wav/files \
     --tf_directory /path/to/tfrecords \
     --checkpoint /path/to/model/checkpoint \
@@ -350,10 +350,10 @@ When using the --target_directory argument, the --tf_directory argument needs to
 
 There is also the --ff flag, which stangs for 'flat file'. Use this argument in the case where you have a directory of files, as opposed to a directory of subdirectories, and require to parse class labels from the name of wav files themselves as opposed to using subdirectory names.
 
-Keep in mind that the `microsoft/vggish_inference.py` is a multithreaded program and may consume significant system resources when running. In order to control the number of Python processes that are spawned to run the program, use the --proc argument followed by the number of processes.
+Keep in mind that the `audioset/vggish_inference.py` is a multithreaded program and may consume significant system resources when running. In order to control the number of Python processes that are spawned to run the program, use the --proc argument followed by the number of processes.
 
 ```sh
-python microsoft/vggish_inference.py \
+python audioset/vggish_inference.py \
     --tf_directory /Microsoft/fox-audio/tfrecord_output \
     --checkpoint /Microsoft/fox-audio/vggish_model.ckpt \
     --pca_params /Microsoft/fox-audio/vggish_pca_params.npz \
