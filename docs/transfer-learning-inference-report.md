@@ -8,24 +8,24 @@ Transfer learning is a technique that ingests pre- trained pieces of a model to 
 2. The model is (partially, or entirely) re- used as the starting point for a model in a new task.
 3. Optionally, the model is tuned to refine the input/ouput pair data available for the new task.
 
-## Models 
+## Models
 
 LSTM for two training/test sets:
 
-| Model                    | Dataset                 | Steps | Loss  | Avg Hit | Avg PERR | MAP   | GAP   | Avg Loss  |
-| ------------------------ | ----------------------- | ----- | ----- | ------- | -------- | ----- | ----- | --------- |
-| LSTM (Transfer Learning) | Fox Data (70/30)*       | 310   | ~0.00 | 0.850   | 0.850    | 0.903 | 0.917 | 2.735837  |
-| LSTM (Transfer Learning) | Fox Data (60/40)**      | 310   | ~0.00 | 0.853   | 0.853    | 0.858 | 0.881 | 2.849910  |
+| Model                    | Dataset              | Steps | Loss  | Avg Hit | Avg PERR | MAP   | GAP   | Avg Loss |
+| ------------------------ | -------------------- | ----- | ----- | ------- | -------- | ----- | ----- | -------- |
+| LSTM (Transfer Learning) | Fox Data (70/30)\*   | 310   | ~0.00 | 0.850   | 0.850    | 0.903 | 0.917 | 2.735837 |
+| LSTM (Transfer Learning) | Fox Data (60/40)\*\* | 310   | ~0.00 | 0.853   | 0.853    | 0.858 | 0.881 | 2.849910 |
 
-*Dataset split at 70% Training Set and 30% Test Set
-**Dataset split at 60% Training Set and 40% Test Set
+\*Dataset split at 70% Training Set and 30% Test Set
+\*\*Dataset split at 60% Training Set and 40% Test Set
 
 ## Runs
 
-| Model                    | Dataset                        | Loss  | Correct Predictions | False Positive Gunshots |
-| ------------------------ | ------------------------------ | ----  | ------------------- | ----------------------- |
-| LSTM (Transfer Learning) | Fox Data (70/30)               | ~0.00 | 66 / 98             | 7                       |
-| LSTM (Transfer Learning) | Fox Data (60/40)               | ~0.00 | 93 / 129            | 18                      |
+| Model                    | Dataset          | Loss  | Correct Predictions | False Positive Gunshots |
+| ------------------------ | ---------------- | ----- | ------------------- | ----------------------- |
+| LSTM (Transfer Learning) | Fox Data (70/30) | ~0.00 | 66 / 98             | 7                       |
+| LSTM (Transfer Learning) | Fox Data (60/40) | ~0.00 | 93 / 129            | 18                      |
 
 ## Summary
 

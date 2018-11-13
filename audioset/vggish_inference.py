@@ -43,22 +43,22 @@ Usage:
   # embeddings. Associated model files are read from the current directory.
   $ python vggish_inference_demo.py
 """
-
+# -*- coding: utf-8 -*-
 from __future__ import print_function
 
-import numpy as np
-from scipy.io import wavfile
-import six
-import tensorflow as tf
-from audioset import vggish_input, vggish_params, vggish_postprocess, vggish_slim
 import os
 import csv
 import sys
-from collections import deque
 import re
 import time
 import multiprocessing as mp
 import os
+import numpy as np
+import six
+import tensorflow as tf
+import vggish_input, vggish_params, vggish_postprocess, vggish_slim
+from collections import deque
+from scipy.io import wavfile
 
 flags = tf.app.flags
 
@@ -127,7 +127,7 @@ def embedding(wav, tf_record_filename):
         if FLAGS.ff:
             # if using flat files (--ff) argument, will retreive class label from file name
             print("parsing flat file(s)...")
-            class_label = (re.search("\(([^)]+)", wav).group(1)).capitalize()
+            class_label = (re.search("\[([^)]+)", wav).group(1)).capitalize()
             print("CLASS LABEL: " + class_label)
 
         else:
@@ -137,7 +137,9 @@ def embedding(wav, tf_record_filename):
 
         # Acquiring class label id
         if FLAGS.labels_file:
-            csv_file = csv.reader(open(FLAGS.labels_file, "rb"), delimiter=",")
+            csv_file = csv.reader(
+                open(FLAGS.labels_file, "rt", encoding="utf8"), delimiter=","
+            )
             for row in csv_file:
                 if class_label in row[2]:
                     print(row)

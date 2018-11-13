@@ -13,7 +13,6 @@ Note: LSTM AudioSet (Bal + Unbal) at target 0.01 loss is still training. Results
 | LSTM                     | AudioSet (Bal + Unbal)  | 56040 | ~0.06 | 0.529   | 0.341    | 0.189 | 0.299 | 17.330322 |
 | LSTM                     | AudioSet (Bal + Unbal)  | 18020 | ~0.01 | 0.523   | 0.334    | 0.174 | 0.286 | 22.703874 |
 
-
 ## Data Used
 
 - AudioSet balanced data-set (22,176 total samples | 178 gunshots)
@@ -22,32 +21,32 @@ Note: LSTM AudioSet (Bal + Unbal) at target 0.01 loss is still training. Results
 
 ## Runs
 
-| Model                    | Dataset                        | Loss | Movie      | Correct Predictions | False Positive Gunshots |
-| ------------------------ | ------------------------------ | ---- | ---------- | ------------------- | ----------------------- |
-| LSTM                     | AudioSet (Bal)                 | 1.00 | Deadpool 1 | 9 / 14              | 36                      |
-| LSTM (Adaptive Learning) | AudioSet (Bal) + Fox Gunshots* | 1.00 | Deadpool 1 | 7 / 14              | 25                      |
-| LSTM                     | AudioSet (Bal)                 | 1.00 | Deadpool 2 | 5 / 25              | 29                      |
-| LSTM (Adaptive Learning) | AudioSet (Bal) + Fox Gunshots* | 1.00 | Deadpool 2 | 5 / 25              | 27                      |
-| LSTM                     | AudioSet (Bal)                 | 0.01 | Deadpool 1 | 0 / 14              | 11                      |
-| LSTM (Adaptive Learning) | AudioSet (Bal) + Fox Gunshots* | 0.01 | Deadpool 1 | 1 / 14              | 9                       |
-| LSTM                     | AudioSet (Bal)                 | 0.01 | Deadpool 2 | 0 / 25              | 14                      |
-| LSTM (Adaptive Learning) | AudioSet (Bal) + Fox Gunshots* | 0.01 | Deadpool 2 | 2 / 25              | 11                      |
-| LSTM                     | AudioSet (Bal + Unbal)         | 3.35 | Deadpool 1 | 3 / 14              | 19                      |
-| LSTM                     | AudioSet (Bal + Unbal)         | 3.35 | Deadpool 2 | 9 / 25              | 24                      |
-| LSTM                     | AudioSet (Bal + Unbal)         | 0.60 | Deadpool 1 | 1 / 14              | 9                       |
-| LSTM                     | AudioSet (Bal + Unbal)         | 0.60 | Deadpool 2 | 3 / 25              | 14                      |
-| LSTM                     | AudioSet (Bal + Unbal)         | 0.01 | Deadpool 1 | 2 / 14              | 22                      |
-| LSTM                     | AudioSet (Bal + Unbal)         | 0.01 | Deadpool 2 | 3/ 25               | 33                      |
+| Model                    | Dataset                         | Loss | Movie      | Correct Predictions | False Positive Gunshots |
+| ------------------------ | ------------------------------- | ---- | ---------- | ------------------- | ----------------------- |
+| LSTM                     | AudioSet (Bal)                  | 1.00 | Deadpool 1 | 9 / 14              | 36                      |
+| LSTM (Adaptive Learning) | AudioSet (Bal) + Fox Gunshots\* | 1.00 | Deadpool 1 | 7 / 14              | 25                      |
+| LSTM                     | AudioSet (Bal)                  | 1.00 | Deadpool 2 | 5 / 25              | 29                      |
+| LSTM (Adaptive Learning) | AudioSet (Bal) + Fox Gunshots\* | 1.00 | Deadpool 2 | 5 / 25              | 27                      |
+| LSTM                     | AudioSet (Bal)                  | 0.01 | Deadpool 1 | 0 / 14              | 11                      |
+| LSTM (Adaptive Learning) | AudioSet (Bal) + Fox Gunshots\* | 0.01 | Deadpool 1 | 1 / 14              | 9                       |
+| LSTM                     | AudioSet (Bal)                  | 0.01 | Deadpool 2 | 0 / 25              | 14                      |
+| LSTM (Adaptive Learning) | AudioSet (Bal) + Fox Gunshots\* | 0.01 | Deadpool 2 | 2 / 25              | 11                      |
+| LSTM                     | AudioSet (Bal + Unbal)          | 3.35 | Deadpool 1 | 3 / 14              | 19                      |
+| LSTM                     | AudioSet (Bal + Unbal)          | 3.35 | Deadpool 2 | 9 / 25              | 24                      |
+| LSTM                     | AudioSet (Bal + Unbal)          | 0.60 | Deadpool 1 | 1 / 14              | 9                       |
+| LSTM                     | AudioSet (Bal + Unbal)          | 0.60 | Deadpool 2 | 3 / 25              | 14                      |
+| LSTM                     | AudioSet (Bal + Unbal)          | 0.01 | Deadpool 1 | 2 / 14              | 22                      |
+| LSTM                     | AudioSet (Bal + Unbal)          | 0.01 | Deadpool 2 | 3/ 25               | 33                      |
 
-*Refer to bottom to see list of used audio samples
+\*Refer to bottom to see list of used audio samples
 
 ## Interpretation
 
-Some interesting findings were made from this experiment especially in regards to potential 
-over-training of the model. We see a large decrease in overall predictions when the model training 
-continued to a loss of 1.00 to 0.01. This may be an excellent place for Fox to continue 
-experimentation to find an optimal loss level. Fox's gunshot data did prove to overall beneficial to model 
-performance, decrease false positives at a greater rate than decrease correct predictions. 
+Some interesting findings were made from this experiment especially in regards to potential
+over-training of the model. We see a large decrease in overall predictions when the model training
+continued to a loss of 1.00 to 0.01. This may be an excellent place for Fox to continue
+experimentation to find an optimal loss level. Fox's gunshot data did prove to overall beneficial to model
+performance, decrease false positives at a greater rate than decrease correct predictions.
 
 General Summary:
 
@@ -59,7 +58,7 @@ General Summary:
 
 ## Next Steps
 
-Transfer Learning is an avenue which should be investigated. The fact that AudioSet consists of so many classifiers most 
+Transfer Learning is an avenue which should be investigated. The fact that AudioSet consists of so many classifiers most
 likely means the model is getting too "confused" in regards to it is looking for. Utilizing a frozen LSTM model based on
 AudioSet and retraining the top layers to only detect gunshots using only Fox data may prove much more effective than
 the Adaptive Learning method used in this report.
