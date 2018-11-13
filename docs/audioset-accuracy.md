@@ -133,8 +133,8 @@ model in the 'predictions' key. The dimensions of the tensor are
 'batch_size' x 'num_classes'.
 ```
 
-> Resources: https://arxiv.org/pdf/1706.08217.pdf
-> https://groups.google.com/forum/#!topic/youtube8m-users/0VWJPPXdjCU
+> Resources: https://arxiv.org/pdf/1706.08217.pdf > https://groups.google.com/forum/#!topic/youtube8m-users/0VWJPPXdjCU
+>  ## How should I format my audio for building a sound effect classifi
 
 ## How should I format my audio for building a sound effect classifier that uses Audioset?
 

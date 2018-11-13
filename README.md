@@ -158,7 +158,6 @@ python youtube8m/transfer.py \
   --export_model_steps=100 \
   --base_checkpoint=lstm/dir/model.ckpt-310 \
   --start_new_model
-
 ```
 
 You can then proceed with evaluating and predicting the results as described above.

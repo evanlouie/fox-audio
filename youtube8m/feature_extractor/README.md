@@ -1,4 +1,5 @@
 # YouTube8M Feature Extractor
+
 This directory contains binary and library code that can extract YouTube8M
 features from images and videos.
 The code requires the Inception TensorFlow model ([tutorial](https://www.tensorflow.org/tutorials/image_recognition)) and our PCA matrix, as
@@ -13,13 +14,12 @@ and the PCA matrix (25 Megabytes, Numpy arrays,
 
 There are two ways to use this code:
 
- 1. Binary `extract_tfrecords_main.py` processes a CSV file of videos (and their
+1.  Binary `extract_tfrecords_main.py` processes a CSV file of videos (and their
     labels) and outputs `tfrecord` file. Files created with this binary match
     the schema of YouTube-8M dataset files, and are therefore are compatible
     with our training starter code. You can also use the file for inference
     using your models that are pre-trained on YouTube-8M.
- 1. Library `feature_extractor.py` which can extract features from images.
-
+1.  Library `feature_extractor.py` which can extract features from images.
 
 ### Using the Binary to create `tfrecords` from videos
 
@@ -50,7 +50,6 @@ installed and linked with ffmpeg. In other words, running this command should
 print `True`:
 
     python -c 'import cv2; print cv2.VideoCapture().open("/path/to/some/video.mp4")'
-
 
 ### Using the library to extract features from images
 
