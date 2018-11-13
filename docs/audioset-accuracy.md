@@ -1,12 +1,15 @@
 # RNNs & Audioset's VGGish Inference Model
 
-- [About VGGish Model](#What-is-the-Eval.py-script-doing)
-- [LSTM Models and RNN Sequential Bounding Foundation](#what-is-loss?)
-- [Which Youtube-8m Model do I choose?](#Which-Youtube-8m-Model-do-I-choose?)
-  - [LSTM Model](##LSTM-Model)
-  - [DBOF Model](##DBof-Model)
-  - [Frame Level Logistic Model](##Frame-Level-Logistic-Model)
-- [How should I format my audio for building and sound effect classifier that uses Audioset?]()
+- [RNNs & Audioset's VGGish Inference Model](#rnns--audiosets-vggish-inference-model)
+
+  - [About the VGGish Model](#about-the-vggish-model)
+  - [What is Loss?](#what-is-loss)
+  - [Which Youtube-8m Model do I choose?](#which-youtube-8m-model-do-i-choose)
+    - [LSTM Model](#lstm-model)
+    - [DBof Model](#dbof-model)
+    - [Frame Level Logistic Model](#frame-level-logistic-model)
+  - [How should I format my audio for building a sound effect classifier that uses Audioset?](#how-should-i-format-my-audio-for-building-a-sound-effect-classifier-that-uses-audioset)
+  - [Audioset Model Comparison](#audioset-model-comparison)
 
 - [Audioset Model Comparison](#audioset-model-comparison)
 
@@ -133,8 +136,8 @@ model in the 'predictions' key. The dimensions of the tensor are
 'batch_size' x 'num_classes'.
 ```
 
-> Resources: https://arxiv.org/pdf/1706.08217.pdf > https://groups.google.com/forum/#!topic/youtube8m-users/0VWJPPXdjCU
->  ## How should I format my audio for building a sound effect classifi
+> Resources: https://arxiv.org/pdf/1706.08217.pdf
+ > https://groups.google.com/forum/#!topic/youtube8m-users/0VWJPPXdjCU
 
 ## How should I format my audio for building a sound effect classifier that uses Audioset?
 
