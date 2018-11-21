@@ -10,15 +10,14 @@ def main():
   Config.KEEP_ALIVE = False
 
   server = Server()
-  server.set_model()
 
   @app.route('/')
-  async def test(request):
+  def test(request):
       return text(server.server_running())
 
-  @app.route('/inference', methods=["POST",])
+  @app.rdoute('/inference', methods=["POST",])
   def post_json(request):
-      return json(server.inference_json(request, "/file/to/path"))
+      return json(server.inference(request, "/file/to/path"))
 
   app.run(host= '0.0.0.0', port=80)
   print('exiting...')

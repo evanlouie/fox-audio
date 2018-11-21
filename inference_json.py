@@ -228,8 +228,9 @@ def inference(reader, train_dir, data_pattern, out_file_location, batch_size, to
 
         coord.join(threads)
         sess.close()
+    return(jsonData)
 
-def main(train_dir, tfrecord):
+def main(unused_argv):
     logging.set_verbosity(tf.logging.INFO)
     if FLAGS.input_model_tgz:
         if FLAGS.train_dir:
@@ -280,7 +281,6 @@ def main(train_dir, tfrecord):
         FLAGS.batch_size,
         FLAGS.top_k,
     )
-    return(flags_dict)
 
 if __name__ == "__main__":
     app.run()
