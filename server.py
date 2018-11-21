@@ -1,28 +1,19 @@
-import sys
-from sanic import Sanic
-from sanic.response import json, text
-from sanic.config import Config
-from server import Server
-import server
+import json
+from predict import get_result, get_model
 
-def main():
-  app = Sanic(__name__)
-  Config.KEEP_ALIVE = False
+class Server:
+  model = None
 
-  server = Server()
-  server.set_model()
+  def set_model(self):
+    self.model = get_model()
 
-  @app.route('/')
-  async def test(request):
-      return text(server.server_running())
+  def server_running(self):
+    return 'Server is running...'
 
-  @app.route('/inference', methods=["POST",])
-  def post_json(request):
-      return json(server.inference_json(request))
-
-  app.run(host= '0.0.0.0', port=80)
-  print('exiting...')
-  sys.exit(0)
-
-if __name__ == '__main__':
-  main()
+  def predict(self, request):
+    incoming = request.json
+    filename  = incoming['filename']
+    print (filename)
+    prediction = get_result(filename, self.model)
+    print (prediction)
+    return prediction
