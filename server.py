@@ -17,6 +17,6 @@ class Server:
     return('Server is running...')
 
   def get_inference(self):
-    inference_json = inference('reader', train_dir, data_pattern, out_file_location, batch_size, top_k)
+    inference_json = inference("reader", train_dir, data_pattern, out_file_location, batch_size, top_k)
     print(inference_json)
     return(inference_json)

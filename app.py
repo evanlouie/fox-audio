@@ -17,7 +17,7 @@ def main():
 
   @app.rdoute('/inference', methods=["POST",])
   def post_json(request):
-      return json(server.inference(request, "/file/to/path"))
+      return json(server.get_inference())
 
   app.run(host= '0.0.0.0', port=80)
   print('exiting...')
