@@ -5,7 +5,7 @@ import configparser
 config = configparser.ConfigParser()
 config.read('environment.properties')
 
-train_dir = config['DEFAULT']['TRAIN_DIRECTORY']
+train_dir = config['DEFAULT']['TRAINING_DIRECTORY']
 data_pattern = config['DEFAULT']['DATA_PATTERN']
 out_file_location = config['DEFAULT']['OUTPUT_FILE_PATH']
 batch_size = config['DEFAULT']['BATCH_SIZE']

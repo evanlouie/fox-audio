@@ -113,6 +113,7 @@ dmypy.json
 # Pyre type checker
 .pyre/
 *.wav
+*.txt
 
 # Custom
 *.csv
@@ -122,3 +123,9 @@ dmypy.json
 .idea
 .vscode
 .DS_Store
+*.tfrecord
+transfer_learning/*
+*.zip
+*.meta
+*.index
+model_new/*

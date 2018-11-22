@@ -15,7 +15,7 @@ def main():
   def test(request):
       return text(server.server_running())
 
-  @app.rdoute('/inference', methods=["POST",])
+  @app.route('/inference', methods=["POST"])
   def post_json(request):
       return json(server.get_inference())
 
