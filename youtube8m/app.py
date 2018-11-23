@@ -15,6 +15,10 @@ def main():
   def test(request):
       return text(server.server_running())
 
+  @app.route('/tfrecord', methods=["POST"])
+  def vggish(request):
+      return(server.get_tfrecord())
+
   @app.route('/inference', methods=["POST"])
   def post_json(request):
       return json(server.get_inference())

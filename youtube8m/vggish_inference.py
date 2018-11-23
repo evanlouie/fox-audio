@@ -252,12 +252,15 @@ def embedding(wav, tf_record_filename):
                 print(seq_example)
                 if writer:
                     writer.write(seq_example.SerializeToString())
+
         if writer:
             writer.close()
         return(seq_example)
     except Exception:
         print("Error on: " + wav)
         return(seq_example)
+        
+
 def main(_):
     if FLAGS.proc:
         number_of_processes = FLAGS.proc
