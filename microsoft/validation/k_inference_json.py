@@ -54,19 +54,20 @@ def main(_):
     #df['pred_label'] = prediction[:, 1]
 
     #json normalized Formatting
+    jsonarray = []
     jsondata = {}
     jsondata['Label_Data'] = {}
     jsondata['VideoId'] = args.wav_file
     print(prediction[:, 1][0])
     jsondata['Label_Data'].update({'label_0':'Other', 'label_1':'gunshot', 'label_2':'pred_label','labelconf_0':str(df['Other'][0]),'labelconf_1':str(df['Gunshot_or_gunfire'][0]),'labelconf_2':str(prediction[:, 1][0])})
-
+    jsonarray.append(jsondata)
     #df['loss'] = df.label_idx
     #df['loss'].sub(df['pred_label'], axis=0)
     #json_str = df.to_json(orient='index')
     #print(jsondata)
     with open(args.json_filepath, 'w') as outfile:
         #outfile.write(json_str)
-        json.dump(jsondata, outfile)
+        json.dump(jsonarray, outfile)
 
 def get_2d_conv_model(config):
 

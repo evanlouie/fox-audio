@@ -1,12 +1,18 @@
-# Authors:
-# - Nathaniel Rose <nathaniel.rose@microsoft.com>
+# Copyright 2017 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS-IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-"""Binary for generating predictions over a set of videos. Outputs a csv or a normalized json"""
+"""Binary for generating predictions over a set of videos."""
 
 import os
 import glob
@@ -92,7 +98,8 @@ def format_lines(video_ids, predictions, top_k):
         line = sorted(line, key=lambda p: -p[1])
         if FLAGS.json_out:
             cnt = (len(line))
-            yield ("{" + "\"VideoId\":"+ "\""+ video_ids[video_index].decode("utf-8")+"\", \"Label_Data\":{"+",".join("\"Label_%d\": \"%i\", \"LabelConf_%d\": \"%g\"" % (cnt, label,cnt, score) for cnt, (label, score) in enumerate(line)) + "}}")
+            #yield ("{" + "\"VideoId\":"+ "\""+ video_ids[video_index].decode("utf-8")+"\", \"Label_Data\":{"+",".join("\"Label_%d\": \"%i\", \"LabelConf_%d\": \"%g\"" % (cnt, label,cnt, score) for cnt, (label, score) in enumerate(line)) + "}}")
+            yield("{" + "\"file\":"+ "\""+ video_ids[video_index].decode("utf-8")+"\", \"labelData\":["+",".join("{\"tag\": \"%i\", \"score\": %g}" % (label, score) for (label, score) in line) + "]}")
         else:
             yield video_ids[video_index].decode("utf-8") + "," + " ".join(
             "%i %g" % (label, score) for (label, score) in line
@@ -185,11 +192,13 @@ def inference(reader, train_dir, data_pattern, out_file_location, batch_size, to
         threads = tf.train.start_queue_runners(sess=sess, coord=coord)
         num_examples_processed = 0
         start_time = time.time()
-        if (FLAGS.json_out):
-            jsonData = []
+        if (not FLAGS.json_out):
+            out_file.write("VideoId,LabelConfidencePairs\n")
         else:
-            out_file.write("VideoId,LabelConfidencePairs\n")           
-
+            outputData = {}
+            outputData['modelType'] ='audioset_v'
+            outputData['modelVersion']=meta_graph_location
+            outputData['inferenceData']=[]
         try:
             while not coord.should_stop():
                 video_id_batch_val, video_batch_val, num_frames_batch_val = sess.run(
@@ -213,11 +222,11 @@ def inference(reader, train_dir, data_pattern, out_file_location, batch_size, to
                 )
                 for line in format_lines(video_id_batch_val, predictions_val, top_k):
                     if(FLAGS.json_out):
-                        jsonData.append(json.loads(line))
+                        outputData['inferenceData'].append(json.loads(line))
                     else:
                         out_file.write(line)
                 if(FLAGS.json_out):
-                    json.dump(jsonData, out_file)
+                    json.dump(outputData, out_file)
                 else:
                     out_file.flush()
 
