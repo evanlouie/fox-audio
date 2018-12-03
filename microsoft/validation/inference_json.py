@@ -97,8 +97,6 @@ def format_lines(video_ids, predictions, top_k):
         ]
         line = sorted(line, key=lambda p: -p[1])
         if FLAGS.json_out:
-            cnt = (len(line))
-            #yield ("{" + "\"VideoId\":"+ "\""+ video_ids[video_index].decode("utf-8")+"\", \"Label_Data\":{"+",".join("\"Label_%d\": \"%i\", \"LabelConf_%d\": \"%g\"" % (cnt, label,cnt, score) for cnt, (label, score) in enumerate(line)) + "}}")
             yield("{" + "\"file\":"+ "\""+ video_ids[video_index].decode("utf-8")+"\", \"labelData\":["+",".join("{\"tag\": \"%i\", \"score\": %g}" % (label, score) for (label, score) in line) + "]}")
         else:
             yield video_ids[video_index].decode("utf-8") + "," + " ".join(

@@ -57,6 +57,7 @@ def main(_):
             prediction = prediction**(1./len(pred_list))
             pred = pd.DataFrame(prediction)
             df = pred
+            # Normalizing json
             df.columns = ['Other', 'Gunshot_or_gunfire']
             jsondata = {}
             jsondata['labelData'] = []
