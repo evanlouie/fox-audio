@@ -158,16 +158,12 @@ def embedding(wav, tf_record_filename):
                     writer.writerow(row)
 
         ############################################################################################
-        print("* 1")
         batch = vggish_input.wavfile_to_examples(wav)
-        print("* 2")
         # print(batch)
 
         ############################################################################################
         # Prepare a postprocessor to munge the model embeddings.
-        print("* 3")
         pproc = vggish_postprocess.Postprocessor(FLAGS.pca_params)
-        print("* 4")
 
         ############################################################################################
 
