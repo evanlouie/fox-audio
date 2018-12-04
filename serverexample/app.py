@@ -23,6 +23,7 @@ def inference():
     f = request.files['fieldNameHere']
 
     f.save(os.path.join('upload', 'testing.wav'))
+ 
     if f.filename == '':
             flash('No selected file')
     
