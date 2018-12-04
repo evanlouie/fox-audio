@@ -106,14 +106,81 @@ def get_last_row(csv_filename):
             lastrow = None
         return lastrow
 
+def embedding_from_wav_data(wav, tf_record_filename, flags):
+    try:
+        ############################################################################################
+        batch = vggish_input.wavfile_to_examples(wav)
+        # print(batch)
+
+        ############################################################################################
+        # Prepare a postprocessor to munge the model embeddings.
+        pproc = vggish_postprocess.Postprocessor(FLAGS.pca_params)
+
+        ############################################################################################
+
+        # If needed, prepare a record writer to store the postprocessed embeddings.
+        if 'tfrecord_file' in flags:
+            writer = tf.python_io.TFRecordWriter(tf_record_filename)
+        # if FLAGS.tf_directory:
+        # writer = tf.python_io.TFRecordWriter(tf_record_filename)
+        else:
+            writer = tf.python_io.TFRecordWriter(tf_record_filename)
+
+        with tf.Graph().as_default(), tf.Session() as sess:
+            # Define the model in inference mode, load the checkpoint, and
+            # locate input and output tensors.
+            vggish_slim.define_vggish_slim(training=False)
+            vggish_slim.load_vggish_slim_checkpoint(sess, FLAGS.checkpoint)
+            features_tensor = sess.graph.get_tensor_by_name(
+                vggish_params.INPUT_TENSOR_NAME
+            )
+            embedding_tensor = sess.graph.get_tensor_by_name(
+                vggish_params.OUTPUT_TENSOR_NAME
+            )
+
+            # Run inference and postprocessing.
+            [embedding_batch] = sess.run(
+                [embedding_tensor], feed_dict={features_tensor: batch}
+            )
+            # print(embedding_batch)
+            postprocessed_batch = pproc.postprocess(embedding_batch)
+            # print(postprocessed_batch)
+
+            # Write the postprocessed embeddings as a SequenceExample, in a similar
+            # format as the features released in AudioSet. Each row of the batch of
+            # embeddings corresponds to roughly a second of audio (96 10ms frames), and
+            # the rows are written as a sequence of bytes-valued features, where each
+            # feature value contains the 128 bytes of the whitened quantized embedding.
+            seq_example = tf.train.SequenceExample(
+                feature_lists=tf.train.FeatureLists(
+                    feature_list={
+                        vggish_params.AUDIO_EMBEDDING_FEATURE_NAME: tf.train.FeatureList(
+                            feature=[
+                                tf.train.Feature(
+                                    bytes_list=tf.train.BytesList(
+                                        value=[embedding.tobytes()]
+                                    )
+                                )
+                                for embedding in postprocessed_batch
+                            ]
+                        )
+                    }
+                )
+            )
+            print(seq_example)
+            if writer:
+                writer.write(seq_example.SerializeToString())
+
+        if writer:
+            writer.close()
+    except Exception:
+        print("Error on: " + wav)
+
+
 
 def embedding(wav, tf_record_filename):
     try:
         print(wav)
-        f = open("csvfile.csv", "a")
-        f.write("\n")  # Give your csv text here.
-        # Python will convert \n to os.linesep
-        f.close()
 
         label_id = 0
         exist_in_csv = "no"

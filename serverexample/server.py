@@ -1,6 +1,6 @@
 import json
 from inference_json import inference
-from vggish_inference import embedding
+from vggish_inference import embedding, embedding_from_wav_data
 import configparser
 
 config = configparser.ConfigParser()
@@ -16,7 +16,14 @@ tfrecord_filename = config['TF']['TFRECORD']
 
 def get_tfrecord():
   print("** get_tfrecord **")
+
   return embedding(wav, tfrecord_filename)
+
+
+def get_tfrecord_from_file(wav_file):
+  flags = dict()
+  flags['ff'] = 'gunshot'
+  return embedding_from_wav_data(wav_file, tfrecord_filename, flags)
 
 '''class Server:
 
