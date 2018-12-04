@@ -14,7 +14,11 @@ top_k = config['DEFAULT']['TOP_K']
 wav = config['TF']['WAV']
 tfrecord_filename = config['TF']['TFRECORD']
 
-class Server:
+def get_tfrecord():
+  print("** get_tfrecord **")
+  return embedding(wav, tfrecord_filename)
+
+'''class Server:
 
   def server_running(self):
     return('Server is running...')
@@ -26,4 +30,4 @@ class Server:
   def get_inference(self):
     inference_json = inference("reader", train_dir, tfrecord_filename, out_file_location, batch_size, top_k)
     print(inference_json)
-    return(inference_json)
+    return(inference_json)'''
