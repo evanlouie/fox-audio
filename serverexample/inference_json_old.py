@@ -80,7 +80,26 @@ if __name__ == "__main__":
     )
     flags.DEFINE_bool("json_out", True, "Outputs inference predictions and label indices to a json file.")
 
+    flags.DEFINE_string(
+        "label_indices",
+        "class_labels_indices.csv",
+        "Pass the Audioset Label Index for a formalized json output"
+    )
+    flags.DEFINE_string(
+        "movie_title",
+        "Deadpool1",
+        "Pass th name of the movie asset for an inference"
+    )
+
     FLAGS = flags.FLAGS
+
+def label_search(csv_file, label_num):
+    csv_file = csv.reader(
+                open(csv_file, "rt", encoding="utf8"), delimiter=","
+            )
+    for row in csv_file:
+        if label_num in row[0]:
+            return(row[2])
 
 def format_lines(video_ids, predictions, top_k, flags):
     batch_size = len(video_ids)
@@ -278,8 +297,12 @@ def inference_app(reader, train_dir, data_pattern, out_file_location, batch_size
         threads = tf.train.start_queue_runners(sess=sess, coord=coord)
         num_examples_processed = 0
         start_time = time.time()
+
+
         if flags['json_out'] == True:
-            jsonData = []
+            print("Preparing JSON ouput...")
+            #jsonData = []
+            #jsonData.append(inferenceYield)
         else:
             out_file.write("VideoId,LabelConfidencePairs\n")           
 
@@ -306,14 +329,13 @@ def inference_app(reader, train_dir, data_pattern, out_file_location, batch_size
                 )
                 for line in format_lines(video_id_batch_val, predictions_val, top_k, flags):
                     if flags['json_out'] == True:
-                        jsonData.append(json.loads(line))
+                        json_output = json.loads(line)
                     else:
                         out_file.write(line)
                 if flags['json_out'] == True:
-                    json.dump(jsonData, out_file)
+                    print(json_output)
                 else:
                     out_file.flush()
-            return(jsonData)
         except tf.errors.OutOfRangeError:
             logging.info(
                 "Done with inference. The output file was written to "
@@ -322,8 +344,9 @@ def inference_app(reader, train_dir, data_pattern, out_file_location, batch_size
         finally:
             coord.request_stop()
 
-        coord.join(threads)
+        #coord.join(threads)
         sess.close()
+    return(json_output)
 
 def main(unused_argv):
     logging.set_verbosity(tf.logging.INFO)

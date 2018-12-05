@@ -5,6 +5,8 @@ import io
 from scipy.io import wavfile
 
 app = Flask(__name__)
+app.debug = True
+#app.run()
 
 @app.route("/", methods=['POST', 'GET'])
 def home():

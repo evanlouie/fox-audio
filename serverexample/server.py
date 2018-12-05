@@ -2,9 +2,7 @@ import json
 import os
 import utils
 from tensorflow.python.lib.io import file_io
-from inference_json import inference_app
-from vggish_inference import embedding
-from inference_json import inference
+from inference_json_old import inference_app
 from vggish_inference import embedding, embedding_from_wav_data
 import configparser
 import readers
@@ -20,7 +18,7 @@ top_k = int(config['DEFAULT']['TOP_K'])
 wav = config['TF']['WAV']
 tfrecord_filename = config['TF']['TFRECORD']
 
-flags = { 'json_out' : True, 'movie_title' : 'Deadpool', 'class_csv_path': '/Users/yvonneradsmikham/Microsoft/fox-audio/serverexample/class_labels_indices_custom.csv' }
+flags = { 'json_out' : True, 'movie_title' : 'Deadpool', 'class_csv_path': 'class_labels_indices_custom.csv' }
 flags_dict_file = os.path.join(train_dir, "model_flags.json")
 flags_dict = json.loads(file_io.FileIO(flags_dict_file, "r").read())
 feature_names, feature_sizes = utils.GetListOfFeatureNamesAndSizes(

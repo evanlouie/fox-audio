@@ -298,12 +298,13 @@ def inference_app(reader, train_dir, data_pattern, out_file_location, batch_size
         video_id_batch, video_batch, num_frames_batch = get_input_data_tensors(
             reader, data_pattern, batch_size
         )
+     
         checkpoint_file = os.path.join(train_dir, "inference_model")
         if not gfile.Exists(checkpoint_file + ".meta"):
             raise IOError("Cannot find %s. Did you run eval.py?" % checkpoint_file)
         meta_graph_location = checkpoint_file + ".meta"
         logging.info("loading meta-graph: " + meta_graph_location)
-
+        
         with tf.device("/cpu:0"):
             saver = tf.train.import_meta_graph(meta_graph_location, clear_devices=True)
         logging.info("restoring variables from " + checkpoint_file)
@@ -329,8 +330,8 @@ def inference_app(reader, train_dir, data_pattern, out_file_location, batch_size
         num_examples_processed = 0
         start_time = time.time()
 
-        print("********1********")
-        if not flags['json_out'] == True:
+        
+        if flags['json_out'] == False:
             out_file.write("VideoId,LabelConfidencePairs\n")
         else:
             outputData = {}
@@ -341,7 +342,7 @@ def inference_app(reader, train_dir, data_pattern, out_file_location, batch_size
             outputData['modelVersion'] = '1.0'
             outputData['timecodes']=[]
         try:
-            print("********2********")
+            
             while not coord.should_stop():
                 video_id_batch_val, video_batch_val, num_frames_batch_val = sess.run(
                     [video_id_batch, video_batch, num_frames_batch]
@@ -353,7 +354,7 @@ def inference_app(reader, train_dir, data_pattern, out_file_location, batch_size
                         num_frames_tensor: num_frames_batch_val,
                     },
                 )
-                print("********3********")
+                
                 now = time.time()
                 num_examples_processed += len(video_batch_val)
                 num_classes = predictions_val.shape[1]
@@ -363,7 +364,7 @@ def inference_app(reader, train_dir, data_pattern, out_file_location, batch_size
                     + " elapsed seconds: "
                     + "{0:.2f}".format(now - start_time)
                 )
-                print("********4********")
+                
                 for line in format_lines_app(video_id_batch_val, predictions_val, top_k, flags):
                     if flags['json_out'] == True:
                         inferenceYield = json.loads(line)
@@ -383,13 +384,12 @@ def inference_app(reader, train_dir, data_pattern, out_file_location, batch_size
                 "Done with inference. The output file was written to "
                 + out_file_location
             )
-            print("********5********")
         finally:
             coord.request_stop()
-            print("********6********")
-        coord.join(threads)
-        print("********7********")
+            
+        #coord.join(threads)
         sess.close()
+    return(outputData)
 
 
 def main(unused_argv):
