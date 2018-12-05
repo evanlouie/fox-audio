@@ -1,1 +1,1 @@
-[{"VideoId": "deadpool1_00-07-50.000.wav", "Label_Data": {"Label_0": "0", "LabelConf_0": "1"}}]
+{"title": "Deadpool", "modelType": "audioset_v", "modelDescription": "/Users/yvonneradsmikham/Microsoft/fox-audio/models/evan-lstm-vanilla-transfer-learning/inference_model.meta", "class": "audio", "modelVersion": "1.0", "timecodes": [{"00-07-50.000": [{"file": "deadpool1_00-07-50.000.wav", "tag": "Gunshot, gunfire", "score": 1}]}]}

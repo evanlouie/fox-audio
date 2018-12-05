@@ -20,21 +20,15 @@ top_k = int(config['DEFAULT']['TOP_K'])
 wav = config['TF']['WAV']
 tfrecord_filename = config['TF']['TFRECORD']
 
-
+flags = { 'json_out' : True, 'movie_title' : 'Deadpool', 'class_csv_path': '/Users/yvonneradsmikham/Microsoft/fox-audio/serverexample/class_labels_indices_custom.csv' }
 flags_dict_file = os.path.join(train_dir, "model_flags.json")
-#if not file_io.file_exists(flags_dict_file):
-#        raise IOError("Cannot find %s. Did you run eval.py?" % flags_dict_file)
 flags_dict = json.loads(file_io.FileIO(flags_dict_file, "r").read())
 feature_names, feature_sizes = utils.GetListOfFeatureNamesAndSizes(
         flags_dict["feature_names"], flags_dict["feature_sizes"]
     )
-
-#feature_sizes=[float(1024), float(128)]
-#feature_names=["mean_rgb", "mean_audio"]
 reader = readers.YT8MFrameFeatureReader(
             feature_names=feature_names, feature_sizes=feature_sizes
         )
-flags = { 'json_out' : True }
 
 def get_tfrecord():
   print("** get_tfrecord **")
@@ -46,17 +40,3 @@ def get_inf_json():
 
 def get_tfrecord_from_file(wav_filename, wav_data):
   return embedding_from_wav_data(wav_filename, wav_data, tfrecord_filename)
-
-'''class Server:
-
-  def server_running(self):
-    return('Server is running...')
-  
-  def get_tfrecord(self):
-    tfrecord = embedding(wav, tfrecord_filename)
-    return(tfrecord)
-
-  def get_inference(self):
-    inference_json = inference("reader", train_dir, tfrecord_filename, out_file_location, batch_size, top_k)
-    print(inference_json)
-    return(inference_json)'''

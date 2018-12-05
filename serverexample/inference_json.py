@@ -1,14 +1,22 @@
-# Authors:
-# - Nathaniel Rose <nathaniel.rose@microsoft.com>
+# Copyright 2017 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS-IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-"""Binary for generating predictions over a set of videos. Outputs a csv or a normalized json"""
+"""Binary for generating predictions over a set of videos."""
 
 import os
+import re
+import csv
 import glob
 import json
 import tarfile
@@ -65,7 +73,7 @@ if __name__ == "__main__":
     flags.DEFINE_string("output_file", "", "The file to save the predictions to.")
     flags.DEFINE_string(
         "output_model_tgz",
-        "output_model.tgz",
+        "",
         "If given, should be a filename with a .tgz extension, "
         "the model graph and checkpoint will be bundled in this "
         "gzip tar. This file can be uploaded to Kaggle for the "
@@ -78,11 +86,29 @@ if __name__ == "__main__":
     flags.DEFINE_integer(
         "num_readers", 1, "How many threads to use for reading input files."
     )
-    flags.DEFINE_bool("json_out", True, "Outputs inference predictions and label indices to a json file.")
+    flags.DEFINE_bool("json_out", False, "Outputs inference predictions and label indices to a json file.")
+    flags.DEFINE_string(
+        "label_indices",
+        "class_labels_indices.csv",
+        "Pass the Audioset Label Index for a formalized json output"
+    )
+    flags.DEFINE_string(
+        "movie_title",
+        "Deadpool1",
+        "Pass th name of the movie asset for an inference"
+    )
 
     FLAGS = flags.FLAGS
 
-def format_lines(video_ids, predictions, top_k, flags):
+def label_search(csv_file, label_num):
+    csv_file = csv.reader(
+                open(csv_file, "rt", encoding="utf8"), delimiter=","
+            )
+    for row in csv_file:
+        if label_num in row[0]:
+            return(row[2])
+
+def format_lines(video_ids, predictions, top_k):
     batch_size = len(video_ids)
     for video_index in range(batch_size):
         top_indices = numpy.argpartition(predictions[video_index], -top_k)[-top_k:]
@@ -91,13 +117,37 @@ def format_lines(video_ids, predictions, top_k, flags):
             for class_index in top_indices
         ]
         line = sorted(line, key=lambda p: -p[1])
-        if flags['json_out'] == True:
-            cnt = (len(line))
-            yield ("{" + "\"VideoId\":"+ "\""+ video_ids[video_index].decode("utf-8")+"\", \"Label_Data\":{"+",".join("\"Label_%d\": \"%i\", \"LabelConf_%d\": \"%g\"" % (cnt, label,cnt, score) for cnt, (label, score) in enumerate(line)) + "}}")
+        if FLAGS.json_out:
+            timecode = ((video_ids[video_index].decode("utf-8")).split('_', 1)[1])[:-4]
+            #yield("{" + "\"file\":"+ "\""+ video_ids[video_index].decode("utf-8")+"\", \"labelData\":["+",".join("{\"tag\": \"%i\", \"score\": %g"+"\file\":"+ "\""+ video_ids[video_index].decode("utf-8")+"\"}" % (label, score) for (label, score) in line) + "]}")
+            yield(
+                "{" + "\"" + timecode + "\":["+",".join("{" + "\"file\": " + "\""+ video_ids[video_index].decode("utf-8") +"\", \"tag\": \"%i\", \"score\": %g}" 
+                % (label, score) for (label, score) in line) + "]}")
         else:
             yield video_ids[video_index].decode("utf-8") + "," + " ".join(
             "%i %g" % (label, score) for (label, score) in line
         ) + "\n"
+
+def format_lines_app(video_ids, predictions, top_k, flags):
+    batch_size = len(video_ids)
+    for video_index in range(batch_size):
+        top_indices = numpy.argpartition(predictions[video_index], -top_k)[-top_k:]
+        line = [
+            (class_index, predictions[video_index][class_index])
+            for class_index in top_indices
+        ]
+        line = sorted(line, key=lambda p: -p[1])
+        if flags['json_out'] ==  True:
+            timecode = ((video_ids[video_index].decode("utf-8")).split('_', 1)[1])[:-4]
+            #yield("{" + "\"file\":"+ "\""+ video_ids[video_index].decode("utf-8")+"\", \"labelData\":["+",".join("{\"tag\": \"%i\", \"score\": %g"+"\file\":"+ "\""+ video_ids[video_index].decode("utf-8")+"\"}" % (label, score) for (label, score) in line) + "]}")
+            yield(
+                "{" + "\"" + timecode + "\":["+",".join("{" + "\"file\": " + "\""+ video_ids[video_index].decode("utf-8") +"\", \"tag\": \"%i\", \"score\": %g}" 
+                % (label, score) for (label, score) in line) + "]}")
+        else:
+            yield video_ids[video_index].decode("utf-8") + "," + " ".join(
+            "%i %g" % (label, score) for (label, score) in line
+        ) + "\n"
+
 
 def get_input_data_tensors(reader, data_pattern, batch_size, num_readers=1):
     """Creates the section of the graph which reads the input data.
@@ -138,6 +188,7 @@ def get_input_data_tensors(reader, data_pattern, batch_size, num_readers=1):
         )
         return video_id_batch, video_batch, num_frames_batch
 
+
 def inference(reader, train_dir, data_pattern, out_file_location, batch_size, top_k):
     with tf.Session(
         config=tf.ConfigProto(allow_soft_placement=True)
@@ -145,13 +196,13 @@ def inference(reader, train_dir, data_pattern, out_file_location, batch_size, to
         video_id_batch, video_batch, num_frames_batch = get_input_data_tensors(
             reader, data_pattern, batch_size
         )
-        checkpoint_file = os.path.join(train_dir, "inference_model")
+        checkpoint_file = os.path.join(FLAGS.train_dir, "inference_model")
         if not gfile.Exists(checkpoint_file + ".meta"):
             raise IOError("Cannot find %s. Did you run eval.py?" % checkpoint_file)
         meta_graph_location = checkpoint_file + ".meta"
-        logging.info("loading meta-graph: " + meta_graph_location)   
+        logging.info("loading meta-graph: " + meta_graph_location)
 
-        '''if FLAGS.output_model_tgz:
+        if FLAGS.output_model_tgz:
             with tarfile.open(FLAGS.output_model_tgz, "w:gz") as tar:
                 for model_file in glob.glob(checkpoint_file + ".*"):
                     tar.add(model_file, arcname=os.path.basename(model_file))
@@ -159,8 +210,7 @@ def inference(reader, train_dir, data_pattern, out_file_location, batch_size, to
                     os.path.join(FLAGS.train_dir, "model_flags.json"),
                     arcname="model_flags.json",
                 )
-            print("Tarred model onto " + FLAGS.output_model_tgz)'''
-
+            print("Tarred model onto " + FLAGS.output_model_tgz)
         with tf.device("/cpu:0"):
             saver = tf.train.import_meta_graph(meta_graph_location, clear_devices=True)
         logging.info("restoring variables from " + checkpoint_file)
@@ -168,6 +218,7 @@ def inference(reader, train_dir, data_pattern, out_file_location, batch_size, to
         input_tensor = tf.get_collection("input_batch_raw")[0]
         num_frames_tensor = tf.get_collection("num_frames")[0]
         predictions_tensor = tf.get_collection("predictions")[0]
+
         # Workaround for num_epochs issue.
         def set_up_init_ops(variables):
             init_op_list = []
@@ -184,11 +235,16 @@ def inference(reader, train_dir, data_pattern, out_file_location, batch_size, to
         threads = tf.train.start_queue_runners(sess=sess, coord=coord)
         num_examples_processed = 0
         start_time = time.time()
-        if FLAGS.json_out:
-            jsonData = []
+        if (not FLAGS.json_out):
+            out_file.write("VideoId,LabelConfidencePairs\n")
         else:
-            out_file.write("VideoId,LabelConfidencePairs\n")           
-
+            outputData = {}
+            outputData['title'] = FLAGS.movie_title
+            outputData['modelType'] ='audioset_v'
+            outputData['modelDescription']=meta_graph_location
+            outputData['class'] = 'audio'
+            outputData['modelVersion'] = '1.0'
+            outputData['timecodes']=[]
         try:
             while not coord.should_stop():
                 video_id_batch_val, video_batch_val, num_frames_batch_val = sess.run(
@@ -210,13 +266,17 @@ def inference(reader, train_dir, data_pattern, out_file_location, batch_size, to
                     + " elapsed seconds: "
                     + "{0:.2f}".format(now - start_time)
                 )
-                for line in format_lines(video_id_batch_val, predictions_val, top_k, flags):
+                for line in format_lines(video_id_batch_val, predictions_val, top_k):
                     if(FLAGS.json_out):
-                        jsonData.append(json.loads(line))
+                        inferenceYield = json.loads(line)
+                        for key, infer in inferenceYield.items():
+                            for scores in infer:
+                                scores['tag'] = label_search(FLAGS.label_indices, scores['tag'])
+                        outputData['timecodes'].append(inferenceYield)
                     else:
                         out_file.write(line)
                 if(FLAGS.json_out):
-                    json.dump(jsonData, out_file)
+                    json.dump(outputData, out_file)
                 else:
                     out_file.flush()
 
@@ -230,7 +290,6 @@ def inference(reader, train_dir, data_pattern, out_file_location, batch_size, to
 
         coord.join(threads)
         sess.close()
-    return(jsonData)
 
 def inference_app(reader, train_dir, data_pattern, out_file_location, batch_size, top_k, flags):
     with tf.Session(
@@ -243,17 +302,7 @@ def inference_app(reader, train_dir, data_pattern, out_file_location, batch_size
         if not gfile.Exists(checkpoint_file + ".meta"):
             raise IOError("Cannot find %s. Did you run eval.py?" % checkpoint_file)
         meta_graph_location = checkpoint_file + ".meta"
-        logging.info("loading meta-graph: " + meta_graph_location)   
-
-        '''if FLAGS.output_model_tgz:
-            with tarfile.open(FLAGS.output_model_tgz, "w:gz") as tar:
-                for model_file in glob.glob(checkpoint_file + ".*"):
-                    tar.add(model_file, arcname=os.path.basename(model_file))
-                tar.add(
-                    os.path.join(FLAGS.train_dir, "model_flags.json"),
-                    arcname="model_flags.json",
-                )
-            print("Tarred model onto " + FLAGS.output_model_tgz)'''
+        logging.info("loading meta-graph: " + meta_graph_location)
 
         with tf.device("/cpu:0"):
             saver = tf.train.import_meta_graph(meta_graph_location, clear_devices=True)
@@ -262,6 +311,7 @@ def inference_app(reader, train_dir, data_pattern, out_file_location, batch_size
         input_tensor = tf.get_collection("input_batch_raw")[0]
         num_frames_tensor = tf.get_collection("num_frames")[0]
         predictions_tensor = tf.get_collection("predictions")[0]
+
         # Workaround for num_epochs issue.
         def set_up_init_ops(variables):
             init_op_list = []
@@ -278,12 +328,20 @@ def inference_app(reader, train_dir, data_pattern, out_file_location, batch_size
         threads = tf.train.start_queue_runners(sess=sess, coord=coord)
         num_examples_processed = 0
         start_time = time.time()
-        if flags['json_out'] == True:
-            jsonData = []
-        else:
-            out_file.write("VideoId,LabelConfidencePairs\n")           
 
+        print("********1********")
+        if not flags['json_out'] == True:
+            out_file.write("VideoId,LabelConfidencePairs\n")
+        else:
+            outputData = {}
+            outputData['title'] = flags['movie_title']
+            outputData['modelType'] ='audioset_v'
+            outputData['modelDescription']=meta_graph_location
+            outputData['class'] = 'audio'
+            outputData['modelVersion'] = '1.0'
+            outputData['timecodes']=[]
         try:
+            print("********2********")
             while not coord.should_stop():
                 video_id_batch_val, video_batch_val, num_frames_batch_val = sess.run(
                     [video_id_batch, video_batch, num_frames_batch]
@@ -295,6 +353,7 @@ def inference_app(reader, train_dir, data_pattern, out_file_location, batch_size
                         num_frames_tensor: num_frames_batch_val,
                     },
                 )
+                print("********3********")
                 now = time.time()
                 num_examples_processed += len(video_batch_val)
                 num_classes = predictions_val.shape[1]
@@ -304,26 +363,34 @@ def inference_app(reader, train_dir, data_pattern, out_file_location, batch_size
                     + " elapsed seconds: "
                     + "{0:.2f}".format(now - start_time)
                 )
-                for line in format_lines(video_id_batch_val, predictions_val, top_k, flags):
+                print("********4********")
+                for line in format_lines_app(video_id_batch_val, predictions_val, top_k, flags):
                     if flags['json_out'] == True:
-                        jsonData.append(json.loads(line))
+                        inferenceYield = json.loads(line)
+                        for key, infer in inferenceYield.items():
+                            for scores in infer:
+                                scores['tag'] = label_search(flags['class_csv_path'], scores['tag'])
+                        outputData['timecodes'].append(inferenceYield)
                     else:
                         out_file.write(line)
                 if flags['json_out'] == True:
-                    json.dump(jsonData, out_file)
+                    json.dump(outputData, out_file)
                 else:
                     out_file.flush()
-            return(jsonData)
+
         except tf.errors.OutOfRangeError:
             logging.info(
                 "Done with inference. The output file was written to "
                 + out_file_location
             )
+            print("********5********")
         finally:
             coord.request_stop()
-
+            print("********6********")
         coord.join(threads)
+        print("********7********")
         sess.close()
+
 
 def main(unused_argv):
     logging.set_verbosity(tf.logging.INFO)
@@ -376,6 +443,7 @@ def main(unused_argv):
         FLAGS.batch_size,
         FLAGS.top_k,
     )
+
 
 if __name__ == "__main__":
     app.run()

@@ -178,7 +178,7 @@ def embedding_from_wav_data(wav_filename, wav_data, tf_record_filename):
         if writer:
             writer.close()
     except Exception:
-        print("Error on: " + wav)
+        print("Error on: " + wav_filename)
 
 
 def embedding(wav, tf_record_filename):
