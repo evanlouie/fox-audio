@@ -8,13 +8,17 @@ app = Flask(__name__)
 def home():
     return "Hello, Flask!"
 
-@app.route("/inf", methods=['POST'])
+@app.route("/inf_json", methods=['POST'])
 def inf():
     #result = server2.test()
     #server.get_tfrecord()
     ##s = Server()
     #s.get_tfrecord()
     server.get_tfrecord()
+    print("******************")
+    json = server.get_inf_json()
+    print(json)
+    print("******************")
     return "Inference API"
 
 @app.route("/inference", methods=['POST'])

@@ -109,11 +109,11 @@ def get_last_row(csv_filename):
 
 def embedding(wav, tf_record_filename):
     try:
-        print(wav)
-        f = open("csvfile.csv", "a")
-        f.write("\n")  # Give your csv text here.
+        #print(wav)
+        #f = open("csvfile.csv", "a")
+        #f.write("\n")  # Give your csv text here.
         # Python will convert \n to os.linesep
-        f.close()
+        #f.close()
 
         label_id = 0
         exist_in_csv = "no"
@@ -208,10 +208,10 @@ def embedding(wav, tf_record_filename):
                                 bytes_list=tf.train.BytesList(
                                     value=[wav_filename.encode()]
                                 )
-                            ),
-                            "labels": tf.train.Feature(
-                                int64_list=tf.train.Int64List(value=[label_id])
-                            ),
+                            )
+                            #"labels": tf.train.Feature(
+                            #    int64_list=tf.train.Int64List(value=[label_id])
+                            #),
                         }
                     ),
                     feature_lists=tf.train.FeatureLists(
@@ -234,6 +234,18 @@ def embedding(wav, tf_record_filename):
                     writer.write(seq_example.SerializeToString())
             else:
                 seq_example = tf.train.SequenceExample(
+                    context=tf.train.Features(
+                        feature={
+                            "video_id": tf.train.Feature(
+                                bytes_list=tf.train.BytesList(
+                                    value=[wav_filename.encode()]
+                                )
+                            )
+                            #"labels": tf.train.Feature(
+                            #    int64_list=tf.train.Int64List(value=[label_id])
+                            #),
+                        }
+                    ),
                     feature_lists=tf.train.FeatureLists(
                         feature_list={
                             vggish_params.AUDIO_EMBEDDING_FEATURE_NAME: tf.train.FeatureList(
@@ -412,4 +424,3 @@ def main(_):
 
 if __name__ == "__main__":
     tf.app.run()
-
