@@ -22,3 +22,6 @@ ENV NAME World
 
 # Run app.py when the container launches
 CMD ["python", "-m", "flask", "run", "--host=0.0.0.0"]
+
+ADD https://storage.googleapis.com/audioset/vggish_model.ckpt .
+ADD https://storage.googleapis.com/audioset/vggish_pca_params.npz .
