@@ -106,10 +106,11 @@ def get_last_row(csv_filename):
             lastrow = None
         return lastrow
 
-def embedding_from_wav_data(wav, tf_record_filename, flags):
+def embedding_from_wav_data(wav_filename, wav_data, tf_record_filename):
     try:
+
         ############################################################################################
-        batch = vggish_input.wavfile_to_examples(wav)
+        batch = vggish_input.wavfile_to_examples(wav_data)
         # print(batch)
 
         ############################################################################################
@@ -118,13 +119,7 @@ def embedding_from_wav_data(wav, tf_record_filename, flags):
 
         ############################################################################################
 
-        # If needed, prepare a record writer to store the postprocessed embeddings.
-        if 'tfrecord_file' in flags:
-            writer = tf.python_io.TFRecordWriter(tf_record_filename)
-        # if FLAGS.tf_directory:
-        # writer = tf.python_io.TFRecordWriter(tf_record_filename)
-        else:
-            writer = tf.python_io.TFRecordWriter(tf_record_filename)
+        writer = tf.python_io.TFRecordWriter(tf_record_filename)
 
         with tf.Graph().as_default(), tf.Session() as sess:
             # Define the model in inference mode, load the checkpoint, and
@@ -152,6 +147,15 @@ def embedding_from_wav_data(wav, tf_record_filename, flags):
             # the rows are written as a sequence of bytes-valued features, where each
             # feature value contains the 128 bytes of the whitened quantized embedding.
             seq_example = tf.train.SequenceExample(
+                context=tf.train.Features(
+                    feature={
+                        "video_id": tf.train.Feature(
+                            bytes_list=tf.train.BytesList(
+                                value=[wav_filename.encode()]
+                            )
+                        )
+                    }
+                ),
                 feature_lists=tf.train.FeatureLists(
                     feature_list={
                         vggish_params.AUDIO_EMBEDDING_FEATURE_NAME: tf.train.FeatureList(
@@ -175,7 +179,6 @@ def embedding_from_wav_data(wav, tf_record_filename, flags):
             writer.close()
     except Exception:
         print("Error on: " + wav)
-
 
 
 def embedding(wav, tf_record_filename):
@@ -280,10 +283,10 @@ def embedding(wav, tf_record_filename):
                                 bytes_list=tf.train.BytesList(
                                     value=[wav_filename.encode()]
                                 )
-                            )
-                            #"labels": tf.train.Feature(
-                            #    int64_list=tf.train.Int64List(value=[label_id])
-                            #),
+                            ),
+                            "labels": tf.train.Feature(
+                                int64_list=tf.train.Int64List(value=[label_id])
+                            ),
                         }
                     ),
                     feature_lists=tf.train.FeatureLists(
@@ -306,18 +309,6 @@ def embedding(wav, tf_record_filename):
                     writer.write(seq_example.SerializeToString())
             else:
                 seq_example = tf.train.SequenceExample(
-                    context=tf.train.Features(
-                        feature={
-                            "video_id": tf.train.Feature(
-                                bytes_list=tf.train.BytesList(
-                                    value=[wav_filename.encode()]
-                                )
-                            )
-                            #"labels": tf.train.Feature(
-                            #    int64_list=tf.train.Int64List(value=[label_id])
-                            #),
-                        }
-                    ),
                     feature_lists=tf.train.FeatureLists(
                         feature_list={
                             vggish_params.AUDIO_EMBEDDING_FEATURE_NAME: tf.train.FeatureList(

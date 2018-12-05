@@ -29,7 +29,6 @@ feature_names, feature_sizes = utils.GetListOfFeatureNamesAndSizes(
         flags_dict["feature_names"], flags_dict["feature_sizes"]
     )
 
-
 #feature_sizes=[float(1024), float(128)]
 #feature_names=["mean_rgb", "mean_audio"]
 reader = readers.YT8MFrameFeatureReader(
@@ -39,18 +38,14 @@ flags = { 'json_out' : True }
 
 def get_tfrecord():
   print("** get_tfrecord **")
-
-  return embedding(wav, tfrecord_filename)
+  return embedding_from_wav_data(wav, tfrecord_filename)
 
 def get_inf_json():
   print("** get_inf_json **")
-  #inference(reader, train_dir, data_pattern, out_file_location, batch_size, top_k)
   return inference_app(reader, train_dir, data_pattern, out_file_location, batch_size, top_k, flags)
 
-def get_tfrecord_from_file(wav_file):
-  flags = dict()
-  flags['ff'] = 'gunshot'
-  return embedding_from_wav_data(wav_file, tfrecord_filename, flags)
+def get_tfrecord_from_file(wav_filename, wav_data):
+  return embedding_from_wav_data(wav_filename, wav_data, tfrecord_filename)
 
 '''class Server:
 
