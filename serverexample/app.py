@@ -1,6 +1,8 @@
-from flask import Flask, request, flash, jsonify
+from flask import Flask, request, flash, jsonify, abort, Response
 import os
 import server
+import io
+from scipy.io import wavfile
 
 app = Flask(__name__)
 
@@ -24,11 +26,19 @@ def inf():
 @app.route("/inference", methods=['POST'])
 def inference():
     #server.get_tfrecord()
-    f = request.files['fieldNameHere']
+    #To-do: error handling for min requirement files
 
-    f.save(os.path.join('upload', 'testing.wav'))
- 
-    if f.filename == '':
+    uploaded_file_name = next(iter(request.files))
+    uploaded_file = request.files[uploaded_file_name]
+    
+    # Get the content from the uploaded wav
+    uploaded_file.seek(0)
+    wav_content = uploaded_file.read()
+
+    # rate, signal = wavfile.read(io.BytesIO(wav_content))
+    server.get_tfrecord_from_file(io.BytesIO(wav_content))
+
+    if uploaded_file.filename == '':
             flash('No selected file')
     
     return "Finished."

@@ -4,6 +4,8 @@ import utils
 from tensorflow.python.lib.io import file_io
 from inference_json import inference_app
 from vggish_inference import embedding
+from inference_json import inference
+from vggish_inference import embedding, embedding_from_wav_data
 import configparser
 import readers
 
@@ -37,12 +39,18 @@ flags = { 'json_out' : True }
 
 def get_tfrecord():
   print("** get_tfrecord **")
+
   return embedding(wav, tfrecord_filename)
 
 def get_inf_json():
   print("** get_inf_json **")
   #inference(reader, train_dir, data_pattern, out_file_location, batch_size, top_k)
   return inference_app(reader, train_dir, data_pattern, out_file_location, batch_size, top_k, flags)
+
+def get_tfrecord_from_file(wav_file):
+  flags = dict()
+  flags['ff'] = 'gunshot'
+  return embedding_from_wav_data(wav_file, tfrecord_filename, flags)
 
 '''class Server:
 
