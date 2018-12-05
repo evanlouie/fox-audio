@@ -1,4 +1,4 @@
-from flask import Flask, request, flash, jsonify, abort, Response
+from flask import Flask, request, flash, jsonify, abort, Response, render_template
 import os
 import server
 import io
@@ -6,9 +6,23 @@ from scipy.io import wavfile
 
 app = Flask(__name__)
 
-@app.route("/")
+@app.route("/", methods=['POST', 'GET'])
 def home():
-    return "Hello, Flask!"
+    if request.method == 'GET':
+        return render_template("index.html")
+    
+    uploaded_file_name = next(iter(request.files))
+    uploaded_file = request.files[uploaded_file_name]
+    wav_filename = uploaded_file.filename
+
+    uploaded_file.seek(0)
+    wav_content = uploaded_file.read()
+
+    server.get_tfrecord_from_file(wav_filename, io.BytesIO(wav_content))
+    json = server.get_inf_json()
+
+    #return jsonify(json)
+    return render_template("index.html", json=str(json))
 
 @app.route("/inference", methods=['POST'])
 def inference():
@@ -22,11 +36,7 @@ def inference():
     uploaded_file.seek(0)
     wav_content = uploaded_file.read()
 
-    # rate, signal = wavfile.read(io.BytesIO(wav_content))
     server.get_tfrecord_from_file(wav_filename, io.BytesIO(wav_content))
     json = server.get_inf_json()
-    print(json)
-    if uploaded_file.filename == '':
-            flash('No selected file')
     
-    return "Finished."
+    return jsonify(json)

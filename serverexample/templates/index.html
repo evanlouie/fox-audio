@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Inference</title>
+</head>
+<body>
+
+{% block content %}
+<div style="padding-left:100px;padding-top:50px">
+    <h2>Audio inference</h2>
+    <div style="padding-top:20px;">
+        <form method="post" enctype=multipart/form-data>
+            <input type="file" name="file" id="myFile">
+            <br/>
+            <div style="padding-top:20px;">
+                <input type="submit" value="Get Inference">
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+<p id="demo">
+    {{json}}
+</p>
+
+</body>
+</html>
