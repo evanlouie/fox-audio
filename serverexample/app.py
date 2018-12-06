@@ -8,7 +8,6 @@ import uuid
 app = Flask(__name__)
 app.debug = True
 
-guid = str(uuid.uuid4())
 
 @app.route("/", methods=['POST', 'GET'])
 def home():
@@ -19,8 +18,9 @@ def home():
 
     return render_template("index.html", json=str(json))
 
-@app.route("/inference", methods=['POST'])
-def inference():
+@app.route("/bulkinference", methods=['POST'])
+def bulk_inference():
+    guid = str(uuid.uuid4())
     #return get_inference()
 
     uploaded_files_name_property = next(iter(request.files))
@@ -40,7 +40,11 @@ def inference():
     json = server.get_inf_json(guid + "*.tfrecord")
     print(str(json))
     return("Finished")
-    
+
+@app.route("/inference", methods=['POST'])
+def inference():
+    return get_inference()
+
 def get_inference():
     uploaded_file_name = next(iter(request.files))
     uploaded_file = request.files[uploaded_file_name]
