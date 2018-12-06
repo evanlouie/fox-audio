@@ -2,7 +2,7 @@ import json
 import os
 import utils
 from tensorflow.python.lib.io import file_io
-from inference_json_old import inference_app
+from inference_json import inference_app
 from vggish_inference import embedding, embedding_from_wav_data
 import configparser
 import readers

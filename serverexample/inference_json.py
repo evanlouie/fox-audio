@@ -386,7 +386,13 @@ def inference_app(reader, train_dir, data_pattern, out_file_location, batch_size
             )
         finally:
             coord.request_stop()
-            
+            sess.run(model.queue.close(cancel_pending_enqueues=True))
+
+        ''' Sometimes when uncommenting the following line, tensorflow will run into a race
+            condition. This is an "abrupt" way to end the session without waiting for threads
+            to terminate. Please refer to:
+            https://stackoverflow.com/questions/36210162/tensorflow-stopping-threads-via-coordinator-seems-not-to-work
+        '''
         #coord.join(threads)
         sess.close()
     return(outputData)
