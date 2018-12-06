@@ -8,7 +8,6 @@ import uuid
 app = Flask(__name__)
 app.debug = True
 
-
 @app.route("/", methods=['POST', 'GET'])
 def home():
     if request.method == 'GET':
@@ -46,6 +45,7 @@ def inference():
     return get_inference()
 
 def get_inference():
+    guid = str(uuid.uuid4())
     uploaded_file_name = next(iter(request.files))
     uploaded_file = request.files[uploaded_file_name]
     wav_filename = uploaded_file.filename
@@ -54,7 +54,7 @@ def get_inference():
     uploaded_file.seek(0)
     wav_content = uploaded_file.read()
 
-    server.get_tfrecord_from_file(wav_filename, io.BytesIO(wav_content))
-    json = server.get_inf_json()
+    server.get_tfrecord_from_file(wav_filename, io.BytesIO(wav_content), guid + "-" + wav_filename + ".tfrecord")
+    json = server.get_inf_json(guid + "*.tfrecord")
     
-    return jsonify(json)
+    return(json)

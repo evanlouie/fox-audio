@@ -359,6 +359,12 @@ def inference_app(reader, train_dir, data_pattern, out_file_location, batch_size
                 now = time.time()
                 num_examples_processed += len(video_batch_val)
                 num_classes = predictions_val.shape[1]
+                print(
+                    "num examples processed: "
+                    + str(num_examples_processed)
+                    + " elapsed seconds: "
+                    + "{0:.2f}".format(now - start_time)
+                )
                 logging.info(
                     "num examples processed: "
                     + str(num_examples_processed)
@@ -369,6 +375,8 @@ def inference_app(reader, train_dir, data_pattern, out_file_location, batch_size
                 for line in format_lines_app(video_id_batch_val, predictions_val, top_k, flags):
                     if flags['json_out'] == True:
                         inferenceYield = json.loads(line)
+                        print("INFERENCE YIELD:")
+                        print(inferenceYield)
                         for key, infer in inferenceYield.items():
                             for scores in infer:
                                 scores['tag'] = label_search(flags['class_csv_path'], scores['tag'])
@@ -379,7 +387,7 @@ def inference_app(reader, train_dir, data_pattern, out_file_location, batch_size
                     json.dump(outputData, out_file)
                 else:
                     out_file.flush()
-
+            return(outputData)
         except tf.errors.OutOfRangeError:
             logging.info(
                 "Done with inference. The output file was written to "
@@ -387,6 +395,7 @@ def inference_app(reader, train_dir, data_pattern, out_file_location, batch_size
             )
         finally:
             coord.request_stop()
+            
             #sess.run(model.queue.close(cancel_pending_enqueues=True))
 
         ''' Sometimes when uncommenting the following line, tensorflow will run into a race
@@ -450,7 +459,6 @@ def main(unused_argv):
         FLAGS.batch_size,
         FLAGS.top_k,
     )
-
 
 if __name__ == "__main__":
     app.run()
