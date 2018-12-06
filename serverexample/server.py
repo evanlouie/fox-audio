@@ -17,8 +17,10 @@ batch_size = int(config['DEFAULT']['BATCH_SIZE'])
 top_k = int(config['DEFAULT']['TOP_K'])
 wav = config['TF']['WAV']
 tfrecord_filename = config['TF']['TFRECORD']
+movie_title = config['DEFAULT']['MOVIE_TITLE']
+class_csv_path = config['DEFAULT']['CSV_FILE_PATH']
 
-flags = { 'json_out' : True, 'movie_title' : 'Deadpool', 'class_csv_path': 'class_labels_indices_custom.csv' }
+flags = { 'json_out' : True, 'movie_title' : movie_title, 'class_csv_path': class_csv_path }
 flags_dict_file = os.path.join(train_dir, "model_flags.json")
 flags_dict = json.loads(file_io.FileIO(flags_dict_file, "r").read())
 feature_names, feature_sizes = utils.GetListOfFeatureNamesAndSizes(
