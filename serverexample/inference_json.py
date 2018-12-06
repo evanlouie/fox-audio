@@ -172,6 +172,7 @@ def get_input_data_tensors(reader, data_pattern, batch_size, num_readers=1):
             raise IOError(
                 "Unable to find input files. data_pattern='" + data_pattern + "'"
             )
+        print("number of input files: " + str(len(files)))
         logging.info("number of input files: " + str(len(files)))
         filename_queue = tf.train.string_input_producer(
             files, num_epochs=1, shuffle=False
