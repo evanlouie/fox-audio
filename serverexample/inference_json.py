@@ -294,7 +294,7 @@ def inference(reader, train_dir, data_pattern, out_file_location, batch_size, to
 
 def inference_app(reader, train_dir, data_pattern, out_file_location, batch_size, top_k, flags):
     with tf.Session(
-        config=tf.ConfigProto(allow_soft_placement=True)
+        config=tf.ConfigProto(allow_soft_placement=True), graph=tf.Graph().as_default()
     ) as sess, gfile.Open(out_file_location, "w+") as out_file:
         video_id_batch, video_batch, num_frames_batch = get_input_data_tensors(
             reader, data_pattern, batch_size
@@ -331,7 +331,6 @@ def inference_app(reader, train_dir, data_pattern, out_file_location, batch_size
         num_examples_processed = 0
         start_time = time.time()
 
-        
         if flags['json_out'] == False:
             out_file.write("VideoId,LabelConfidencePairs\n")
         else:
@@ -355,7 +354,7 @@ def inference_app(reader, train_dir, data_pattern, out_file_location, batch_size
                         num_frames_tensor: num_frames_batch_val,
                     },
                 )
-                
+
                 now = time.time()
                 num_examples_processed += len(video_batch_val)
                 num_classes = predictions_val.shape[1]
@@ -371,7 +370,7 @@ def inference_app(reader, train_dir, data_pattern, out_file_location, batch_size
                     + " elapsed seconds: "
                     + "{0:.2f}".format(now - start_time)
                 )
-                
+                    
                 for line in format_lines_app(video_id_batch_val, predictions_val, top_k, flags):
                     if flags['json_out'] == True:
                         inferenceYield = json.loads(line)
@@ -379,7 +378,10 @@ def inference_app(reader, train_dir, data_pattern, out_file_location, batch_size
                         print(inferenceYield)
                         for key, infer in inferenceYield.items():
                             for scores in infer:
-                                scores['tag'] = label_search(flags['class_csv_path'], scores['tag'])
+                                try:
+                                    scores['tag'] = label_search(flags['class_csv_path'], scores['tag'])
+                                except Exception as e:
+                                    print('EXCEPTION')
                         outputData['timecodes'].append(inferenceYield)
                     else:
                         out_file.write(line)
@@ -388,14 +390,15 @@ def inference_app(reader, train_dir, data_pattern, out_file_location, batch_size
                 else:
                     out_file.flush()
             return(outputData)
+            
         except tf.errors.OutOfRangeError:
             logging.info(
                 "Done with inference. The output file was written to "
                 + out_file_location
             )
         finally:
+            #print("oh yeah")
             coord.request_stop()
-            
             #sess.run(model.queue.close(cancel_pending_enqueues=True))
 
         ''' Sometimes when uncommenting the following line, tensorflow will run into a race

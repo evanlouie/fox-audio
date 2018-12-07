@@ -33,7 +33,7 @@ reader = readers.YT8MFrameFeatureReader(
 
 def get_tfrecord():
   print("** get_tfrecord **")
-  return embedding_from_wav_data(wav, tfrecord_filename)
+  return embedding_from_wav_data(wav, tfrecord_filename, tfrecord_filename_path+tfrecord_filename)
 
 def get_inf_json(tfrecord_pattern):
   print("** get_inf_json **")
