@@ -7,7 +7,7 @@
 
 {% block content %}
 <div style="padding-left:100px;padding-top:50px">
-    <h2>Audio inference</h2>
+    <h2>Audio Inference</h2>
     <div style="padding-top:20px;">
         <form method="post" enctype=multipart/form-data>
             <input type="file" name="file" id="myFile">
@@ -20,9 +20,14 @@
     </div>
 </div>
 {% endblock %}
-<p id="demo">
-    {{json}}
-</p>
+<div style="padding-left:100px;padding-top:0px">
+    <h2>Output</h2>
+    <div style="padding-top:0px;margin-right:0">
+        <p id="demo">
+        {{json}}
+        </p>
+    </div>
+</div>
 
 </body>
 </html>
