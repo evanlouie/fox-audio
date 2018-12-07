@@ -294,7 +294,7 @@ def inference(reader, train_dir, data_pattern, out_file_location, batch_size, to
 
 def inference_app(reader, train_dir, data_pattern, out_file_location, batch_size, top_k, flags):
     with tf.Session(
-        config=tf.ConfigProto(allow_soft_placement=True), graph=tf.Graph().as_default()
+        config=tf.ConfigProto(allow_soft_placement=True)
     ) as sess, gfile.Open(out_file_location, "w+") as out_file:
         video_id_batch, video_batch, num_frames_batch = get_input_data_tensors(
             reader, data_pattern, batch_size

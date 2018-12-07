@@ -171,15 +171,17 @@ def embedding_from_wav_data(wav_filename, wav_data, tf_record_filename):
                     }
                 )
             )
-            # print(seq_example)
+            print(seq_example)
             if writer:
                 writer.write(seq_example.SerializeToString())
-
+            return(seq_example)
         if writer:
+            return(seq_example)
             writer.close()
     except Exception as e:
         print("Error on: " + wav_filename)
         print(e)
+
 
 
 def embedding(wav, tf_record_filename):
