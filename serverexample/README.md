@@ -23,7 +23,7 @@ This repo contains starter code for a Web API for:
 
 
 ### Run on localhost
-1. cd to the serverexample directory
+1. `cd serverexample`
 2. Run the following command in the terminal to start the server: `python -m flask run`
 
 The server should now be running on localhost:5000
