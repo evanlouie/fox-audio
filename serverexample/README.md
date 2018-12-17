@@ -11,7 +11,8 @@ This repo contains starter code for a Web API for:
 - Visual Studio Code: https://code.visualstudio.com/
 - Trained audioset model directory
 - Run eval.py on the trained model
-- Audioset eval features directory (audioset_v1_embeddings/eval). **Note:** Add this directory inside the `serverexample` directory.
+- Audioset eval features directory (`audioset_v1_embeddings/eval`). **Note:** Add this directory inside the `serverexample` directory.
+- The csv file with the labels that correspond to the classifier model.
 
 ### Additional setup:
 1. Change the directories in the `environment.properties` file to the directories from your machine
