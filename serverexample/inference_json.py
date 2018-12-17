@@ -374,8 +374,8 @@ def inference_app(reader, train_dir, data_pattern, out_file_location, batch_size
                 for line in format_lines_app(video_id_batch_val, predictions_val, top_k, flags):
                     if flags['json_out'] == True:
                         inferenceYield = json.loads(line)
-                        print("INFERENCE YIELD:")
-                        print(inferenceYield)
+                        #print("INFERENCE YIELD:")
+                        #print(inferenceYield)
                         for key, infer in inferenceYield.items():
                             for scores in infer:
                                 try:
@@ -397,7 +397,6 @@ def inference_app(reader, train_dir, data_pattern, out_file_location, batch_size
                 + out_file_location
             )
         finally:
-            #print("oh yeah")
             coord.request_stop()
             #sess.run(model.queue.close(cancel_pending_enqueues=True))
 
@@ -406,7 +405,7 @@ def inference_app(reader, train_dir, data_pattern, out_file_location, batch_size
             to terminate. Please refer to:
             https://stackoverflow.com/questions/36210162/tensorflow-stopping-threads-via-coordinator-seems-not-to-work
         '''
-        #coord.join(threads)
+        coord.join(threads)
         sess.close()
     return(outputData)
 
