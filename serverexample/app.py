@@ -12,22 +12,21 @@ app.debug = True
 def home():
     if request.method == 'GET':
         return render_template("index.html")
-    if request.form['submit_button'] == 'Get Inference':
+    if request.form['submit_button'] == 'Get Inference' and len(request.files.getlist("my_file[]")) == 1:
         json = get_inference()
     if request.form['submit_button'] == 'Get Tfrecord':
         json = get_tfrecord()
+    if request.form['submit_button'] == 'Get Inference' and len(request.files.getlist("my_file[]")) > 1:
+        json = bulk_inference()
     return render_template("index.html", json=str(json))
 
 @app.route("/bulkinference", methods=['POST'])
 def bulk_inference():
     guid = str(uuid.uuid4())
-    #return get_inference()
 
     uploaded_files_name_property = next(iter(request.files))
     files = request.files.getlist(uploaded_files_name_property)
-    #uploaded_file = request.files[uploaded_file_name]
-    #wav_filename = uploaded_file.filename
-
+    
     for wav_file in files:
         wav_filename = wav_file.filename
         # Get the content from the uploaded wav
@@ -36,10 +35,9 @@ def bulk_inference():
 
         server.get_tfrecord_from_file(wav_filename, io.BytesIO(wav_content), guid + "-" + wav_filename + ".tfrecord")
         
-        #return jsonify(json)
     json = server.get_inf_json(guid + "*.tfrecord")
     print(str(json))
-    return("Finished")
+    return(json)
 
 @app.route("/inference", methods=['POST'])
 def inference():

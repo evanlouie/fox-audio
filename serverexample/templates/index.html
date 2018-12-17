@@ -10,13 +10,24 @@
     <h2>Audio Inference</h2>
     <div style="padding-top:20px;">
         <form method="post" enctype=multipart/form-data>
-            <input type="file" name="file" id="myFile">
+            <input type="file" name="my_file[]" id="myFiles" multiple>
             <br/>
             <div style="padding-top:20px;">
                 <input type="submit" name="submit_button" value="Get Inference">
                 <input type="submit" name="submit_button" value="Get Tfrecord">
             </div>
         </form>
+        <?php
+        if (isset($_FILES['my_file'])) {
+            $myFile = $_FILES['my_file'];
+            $fileCount = count($myFile["name"]);
+
+            for ($i = 0; $i < $fileCount; $i++) {
+                ?>
+                <?php
+            }
+        }
+    ?>
     </div>
 </div>
 {% endblock %}
