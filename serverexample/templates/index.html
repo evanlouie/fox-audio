@@ -17,17 +17,6 @@
                 <input type="submit" name="submit_button" value="Get Tfrecord">
             </div>
         </form>
-        <?php
-        if (isset($_FILES['my_file'])) {
-            $myFile = $_FILES['my_file'];
-            $fileCount = count($myFile["name"]);
-
-            for ($i = 0; $i < $fileCount; $i++) {
-                ?>
-                <?php
-            }
-        }
-    ?>
     </div>
 </div>
 {% endblock %}
