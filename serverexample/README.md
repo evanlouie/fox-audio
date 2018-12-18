@@ -19,8 +19,11 @@ This repo contains starter code for a Web API for:
 2. Change the directories in the `environment.properties` file to the appropriate directories.
 
 `TRAINING_DIRECTORY` is the path to the trained model.
+
 `DATA_PATTERN` is the path that stores the tfrecords upon generated.
+
 `OUTPUT_FILE_PATH` is the path to the json output file that contains inference on uploaded file(s).
+
 `CSV_FILE_PATH` is the path to the csv labels file
 
 3. Install the requirements listed on `requirements.txt`. You can use pip for this:
