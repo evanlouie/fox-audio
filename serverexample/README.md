@@ -1,4 +1,4 @@
-# Flask server example
+# Web APIs with Flask
 
 This repo contains starter code for a Web API for:
 
