@@ -11,7 +11,9 @@ This repo contains starter code for a Web API for:
 - Trained Tensorflow model
 - `inference_model` files (This implies that evaluation and inference must be performed on the trained model)
 - Eval features directory (e.g. `audioset_v1_embeddings/eval`). 
+
 **Note:** Copy this directory inside `serverexample`. The path for the eval features is the path to tfrecords that were used to perform evaluation. This path *_must_* be a relative path (e.g. `audioset_v1_embeddings/eval`), and *_not_* the full absolute path (e.g. `C:/User/youtube8m/audioset_v1_embeddings/eval`). If the full path was used during evaluation, eval may need to be performed again (along with inference) using relative paths for the argument `--eval_data_pattern`.
+
 - The csv file with the labels associated with the classifier model (e.g. `class_labels_indices.csv`)
 
 ### Additional setup:
